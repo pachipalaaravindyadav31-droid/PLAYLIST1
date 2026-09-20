@@ -1,0 +1,153 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-12">
+        <h2 class="text-success fw-bold"><i class="fa-solid fa-gauge-high me-2"></i>Deployment & Monitoring Dashboard</h2>
+        <p class="text-secondary">Track model health, review inference log telemetry, and monitor input feature drift in real-time.</p>
+    </div>
+</div>
+
+<!-- Telemetry Summary Cards -->
+<div class="row mb-4">
+    <div class="col-md-4 mb-3">
+        <div class="card bg-black border-secondary text-center py-3 shadow-sm">
+            <div class="card-body">
+                <div class="text-success display-6 mb-1"><i class="fa-solid fa-cloud-arrow-up"></i></div>
+                <h3 class="card-title fw-bold" id="totalPredictionsCount">{{ log_count }}</h3>
+                <p class="card-text text-secondary uppercase small tracking-wider mb-0">Total Logged Predictions</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4 mb-3">
+        <div class="card bg-black border-secondary text-center py-3 shadow-sm">
+            <div class="card-body">
+                <div class="text-info display-6 mb-1"><i class="fa-solid fa-wave-square"></i></div>
+                <h3 class="card-title fw-bold">{{ "%.2f"|format(avg_popularity) }}</h3>
+                <p class="card-text text-secondary uppercase small tracking-wider mb-0">Recent Average Popularity</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4 mb-3">
+        <div class="card bg-black border-secondary text-center py-3 shadow-sm">
+            <div class="card-body">
+                <div class="text-danger display-6 mb-1"><i class="fa-solid fa-forward-step"></i></div>
+                <h3 class="card-title fw-bold">{{ "%.1f"|format(avg_skip_prob * 100) }}%</h3>
+                <p class="card-text text-secondary uppercase small tracking-wider mb-0">Recent Average Skip Rate</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <!-- Left Column: Data Drift Monitor -->
+    <div class="col-lg-6 mb-4">
+        <div class="card bg-black border-secondary shadow h-100">
+            <div class="card-header bg-dark border-secondary py-3">
+                <h5 class="card-title mb-0 text-success fw-bold"><i class="fa-solid fa-triangle-exclamation me-2"></i>Data Drift Detector</h5>
+            </div>
+            <div class="card-body">
+                <p class="text-secondary small">Compare the mathematical mean of recent API inputs against the baseline training dataset. Drift is flagged if absolute deviation exceeds $\Delta = 0.10$.</p>
+                <div class="table-responsive">
+                    <table class="table table-dark align-middle border-secondary mt-3">
+                        <thead>
+                            <tr class="text-secondary small border-secondary">
+                                <th>Audio Feature</th>
+                                <th>Baseline Mean</th>
+                                <th>Logged Mean</th>
+                                <th>Deviation ($\Delta$)</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for feature, values in drift_metrics.items() %}
+                            <tr>
+                                <td class="fw-semibold text-capitalize">{{ feature }}</td>
+                                <td>{{ "%.3f"|format(values.baseline) }}</td>
+                                <td>{{ "%.3f"|format(values.logged) }}</td>
+                                <td class="{% if values.drift_detected %}text-danger fw-bold{% else %}text-success{% endif %}">
+                                    {{ "%+.3f"|format(values.deviation) }}
+                                </td>
+                                <td>
+                                    {% if values.drift_detected %}
+                                    <span class="badge bg-danger"><i class="fa-solid fa-triangle-exclamation"></i> Drifted</span>
+                                    {% else %}
+                                    <span class="badge bg-success"><i class="fa-solid fa-circle-check"></i> Healthy</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+
+                {% if drift_flag %}
+                <div class="alert alert-danger border-danger bg-dark mt-4 mb-0">
+                    <h6 class="alert-heading fw-bold"><i class="fa-solid fa-circle-radiation me-2"></i>Data Drift Alert Triggered!</h6>
+                    <p class="small mb-0 text-secondary">
+                        Incoming API requests deviate significantly from training data baseline bounds. We recommend triggering a model retraining pipeline or re-fitting the pipeline scalers on current production window data.
+                    </p>
+                </div>
+                {% else %}
+                <div class="alert alert-success border-success bg-dark mt-4 mb-0">
+                    <h6 class="alert-heading fw-bold"><i class="fa-solid fa-circle-check me-2"></i>Data Alignment Healthy</h6>
+                    <p class="small mb-0 text-secondary">
+                        Incoming user queries align closely with the training data distribution. Inference performance matches test splits.
+                    </p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Right Column: Live Logs -->
+    <div class="col-lg-6 mb-4">
+        <div class="card bg-black border-secondary shadow h-100">
+            <div class="card-header bg-dark border-secondary py-3">
+                <h5 class="card-title mb-0 text-success fw-bold"><i class="fa-solid fa-file-lines me-2"></i>Prediction Telemetry Logs</h5>
+            </div>
+            <div class="card-body">
+                <p class="text-secondary small">Displays the last 8 requests processed by the <code>/api/predict</code> Flask backend. Kept in persistent storage on disk.</p>
+                <div class="table-responsive" style="max-height: 400px; overflow-y: auto;">
+                    <table class="table table-dark table-hover align-middle border-secondary mt-2 small">
+                        <thead>
+                            <tr class="text-secondary border-secondary">
+                                <th>Timestamp</th>
+                                <th>Genre</th>
+                                <th>Pred Pop</th>
+                                <th>Skip Prob</th>
+                                <th>Risk Class</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% if logs %}
+                                {% for row in logs %}
+                                <tr>
+                                    <td class="text-secondary text-nowrap">{{ row.timestamp.split('T')[1][:8] if 'T' in row.timestamp else row.timestamp }}</td>
+                                    <td class="text-capitalize">{{ row.track_genre }}</td>
+                                    <td class="fw-bold text-success">{{ "%.1f"|format(row.predicted_popularity|float) }}</td>
+                                    <td>{{ "%.1f"|format(row.predicted_skip_probability|float * 100) }}%</td>
+                                    <td>
+                                        {% if row.skip_risk_category == 'High' %}
+                                        <span class="badge bg-danger">High</span>
+                                        {% elif row.skip_risk_category == 'Medium' %}
+                                        <span class="badge bg-warning text-dark">Medium</span>
+                                        {% else %}
+                                        <span class="badge bg-success">Low</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            {% else %}
+                                <tr>
+                                    <td colspan="5" class="text-center py-4 text-secondary">No predictions logged yet. Run predictions in the Playground to populate logs.</td>
+                                </tr>
+                            {% endif %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,176 @@
+/* PlaylistPulse Custom Styles */
+
+/* Base overrides */
+body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    letter-spacing: -0.015em;
+    background-color: #121212 !important;
+}
+
+.bg-black {
+    background-color: #040404 !important;
+}
+
+.text-success {
+    color: #1DB954 !important;
+}
+
+.btn-success {
+    background-color: #1DB954 !important;
+    border-color: #1DB954 !important;
+    color: #fff !important;
+}
+
+.btn-success:hover, .btn-success:focus {
+    background-color: #1ed760 !important;
+    border-color: #1ed760 !important;
+}
+
+.badge.bg-success {
+    background-color: #1DB954 !important;
+}
+
+.bg-purple {
+    background-color: #8a2be2 !important;
+    color: white;
+}
+
+.text-purple {
+    color: #8a2be2 !important;
+}
+
+/* Card customizations */
+.card {
+    border-radius: 12px;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.card:hover {
+    box-shadow: 0 8px 24px rgba(0,0,0,0.5);
+}
+
+.card-header {
+    border-top-left-radius: 12px !important;
+    border-top-right-radius: 12px !important;
+    background-color: #181818 !important;
+}
+
+.alert {
+    border-radius: 8px;
+}
+
+/* Tab styling */
+.nav-tabs {
+    border-bottom: 2px solid #282828;
+}
+
+.nav-tabs .nav-link {
+    border: none;
+    color: #b3b3b3 !important;
+    padding: 12px 20px;
+    border-radius: 0;
+}
+
+.nav-tabs .nav-link:hover {
+    color: #fff !important;
+    border-bottom: 3px solid #b3b3b3;
+}
+
+.nav-tabs .nav-link.active {
+    background: none !important;
+    color: #1DB954 !important;
+    border: none !important;
+    border-bottom: 3px solid #1DB954 !important;
+}
+
+/* Prediction Trace styling */
+.prediction-trace-flow {
+    position: relative;
+}
+
+.trace-node {
+    transition: all 0.3s ease;
+}
+
+.trace-node.active-node {
+    border-color: #1DB954 !important;
+    background-color: rgba(29, 185, 84, 0.08) !important;
+    box-shadow: 0 0 15px rgba(29, 185, 84, 0.3);
+    transform: scale(1.02);
+}
+
+.trace-node.active-node .node-icon {
+    background-color: #1DB954 !important;
+    color: #000 !important;
+}
+
+.trace-arrow {
+    font-size: 14px;
+    color: #404040;
+    transition: all 0.3s ease;
+}
+
+.trace-arrow.active-arrow {
+    color: #1DB954;
+    text-shadow: 0 0 8px rgba(29, 185, 84, 0.8);
+    transform: scale(1.2);
+}
+
+/* Sliders */
+.form-range::-webkit-slider-thumb {
+    background: #1DB954;
+}
+
+.form-range::-moz-range-thumb {
+    background: #1DB954;
+}
+
+.form-range::-ms-thumb {
+    background: #1DB954;
+}
+
+/* Table styling */
+.table {
+    border-color: #282828;
+}
+
+.table > :not(caption) > * > * {
+    background-color: transparent !important;
+    padding: 12px 16px;
+}
+
+.table-success {
+    background-color: rgba(29, 185, 84, 0.08) !important;
+}
+
+/* Scrollbar styling */
+::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: #121212;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #282828;
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #404040;
+}
+
+/* Small helpers */
+.uppercase {
+    text-transform: uppercase;
+}
+
+.tracking-wider {
+    letter-spacing: 0.08em;
+}
+
+.x-small {
+    font-size: 11px;
+}

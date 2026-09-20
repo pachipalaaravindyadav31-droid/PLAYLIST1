@@ -1,0 +1,345 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-12">
+        <h2 class="text-success fw-bold"><i class="fa-solid fa-wand-magic-sparkles me-2"></i>Prediction Playground</h2>
+        <p class="text-secondary">Input track characteristics, select your models, and generate real-time predictions.</p>
+    </div>
+</div>
+
+<div class="row">
+    <!-- Left Column: Form Inputs -->
+    <div class="col-lg-6 mb-4">
+        <div class="card bg-black border-secondary shadow">
+            <div class="card-header bg-dark border-secondary">
+                <h5 class="card-title mb-0 text-success fw-semibold"><i class="fa-solid fa-music me-2"></i>Track Audio Features</h5>
+            </div>
+            <div class="card-body">
+                <form id="predictionForm">
+                    <!-- Core Track Info -->
+                    <div class="row mb-3">
+                        <div class="col-md-6 mb-2">
+                            <label for="track_genre" class="form-label small text-secondary">Track Genre</label>
+                            <select class="form-select bg-dark text-light border-secondary" id="track_genre" name="track_genre" required>
+                                {% for genre in genres %}
+                                <option value="{{ genre }}" {% if genre == 'acoustic' %}selected{% endif %}>{{ genre }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-6 mb-2">
+                            <label for="duration_ms" class="form-label small text-secondary">Duration (Seconds)</label>
+                            <input type="number" class="form-control bg-dark text-light border-secondary" id="duration_ms" name="duration_ms" value="230" min="10" max="1000" required>
+                            <div class="form-text text-secondary small">Range: 10 - 1000 seconds.</div>
+                        </div>
+                    </div>
+
+                    <!-- Sliders row 1: Danceability & Energy -->
+                    <div class="row mb-3">
+                        <div class="col-md-6 mb-2">
+                            <label for="danceability" class="form-label small text-secondary d-flex justify-content-between">
+                                <span>Danceability</span>
+                                <span id="dance_val" class="text-success fw-semibold">0.67</span>
+                            </label>
+                            <input type="range" class="form-range" id="danceability" name="danceability" min="0" max="1" step="0.01" value="0.67">
+                        </div>
+                        <div class="col-md-6 mb-2">
+                            <label for="energy" class="form-label small text-secondary d-flex justify-content-between">
+                                <span>Energy</span>
+                                <span id="energy_val" class="text-success fw-semibold">0.46</span>
+                            </label>
+                            <input type="range" class="form-range" id="energy" name="energy" min="0" max="1" step="0.01" value="0.46">
+                        </div>
+                    </div>
+
+                    <!-- Sliders row 2: Acousticness & Speechiness -->
+                    <div class="row mb-3">
+                        <div class="col-md-6 mb-2">
+                            <label for="acousticness" class="form-label small text-secondary d-flex justify-content-between">
+                                <span>Acousticness</span>
+                                <span id="acoustic_val" class="text-success fw-semibold">0.03</span>
+                            </label>
+                            <input type="range" class="form-range" id="acousticness" name="acousticness" min="0" max="1" step="0.01" value="0.03">
+                        </div>
+                        <div class="col-md-6 mb-2">
+                            <label for="speechiness" class="form-label small text-secondary d-flex justify-content-between">
+                                <span>Speechiness</span>
+                                <span id="speech_val" class="text-success fw-semibold">0.14</span>
+                            </label>
+                            <input type="range" class="form-range" id="speechiness" name="speechiness" min="0" max="1" step="0.01" value="0.14">
+                        </div>
+                    </div>
+
+                    <!-- Sliders row 3: Instrumentalness & Liveness -->
+                    <div class="row mb-3">
+                        <div class="col-md-6 mb-2">
+                            <label for="instrumentalness" class="form-label small text-secondary d-flex justify-content-between">
+                                <span>Instrumentalness</span>
+                                <span id="instrumental_val" class="text-success fw-semibold">0.00</span>
+                            </label>
+                            <input type="range" class="form-range" id="instrumentalness" name="instrumentalness" min="0" max="1" step="0.01" value="0.00">
+                        </div>
+                        <div class="col-md-6 mb-2">
+                            <label for="liveness" class="form-label small text-secondary d-flex justify-content-between">
+                                <span>Liveness</span>
+                                <span id="liveness_val" class="text-success fw-semibold">0.36</span>
+                            </label>
+                            <input type="range" class="form-range" id="liveness" name="liveness" min="0" max="1" step="0.01" value="0.36">
+                        </div>
+                    </div>
+
+                    <!-- Sliders row 4: Valence & Loudness -->
+                    <div class="row mb-3">
+                        <div class="col-md-6 mb-2">
+                            <label for="valence" class="form-label small text-secondary d-flex justify-content-between">
+                                <span>Valence (Happiness)</span>
+                                <span id="valence_val" class="text-success fw-semibold">0.71</span>
+                            </label>
+                            <input type="range" class="form-range" id="valence" name="valence" min="0" max="1" step="0.01" value="0.71">
+                        </div>
+                        <div class="col-md-6 mb-2">
+                            <label for="loudness" class="form-label small text-secondary d-flex justify-content-between">
+                                <span>Loudness (dB)</span>
+                                <span id="loudness_val" class="text-success fw-semibold">-6.7 dB</span>
+                            </label>
+                            <input type="range" class="form-range" id="loudness" name="loudness" min="-60" max="0" step="0.1" value="-6.7">
+                        </div>
+                    </div>
+
+                    <!-- Dropdowns row: Key, Mode, Tempo, Time Signature -->
+                    <div class="row mb-3">
+                        <div class="col-md-3 mb-2">
+                            <label for="key" class="form-label small text-secondary">Key</label>
+                            <select class="form-select bg-dark text-light border-secondary" id="key" name="key">
+                                <option value="0">C (0)</option>
+                                <option value="1" selected>C# (1)</option>
+                                <option value="2">D (2)</option>
+                                <option value="3">D# (3)</option>
+                                <option value="4">E (4)</option>
+                                <option value="5">F (5)</option>
+                                <option value="6">F# (6)</option>
+                                <option value="7">G (7)</option>
+                                <option value="8">G# (8)</option>
+                                <option value="9">A (9)</option>
+                                <option value="10">A# (10)</option>
+                                <option value="11">B (11)</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3 mb-2">
+                            <label for="mode" class="form-label small text-secondary">Mode</label>
+                            <select class="form-select bg-dark text-light border-secondary" id="mode" name="mode">
+                                <option value="0" selected>Minor (0)</option>
+                                <option value="1">Major (1)</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3 mb-2">
+                            <label for="tempo" class="form-label small text-secondary">Tempo (BPM)</label>
+                            <input type="number" class="form-control bg-dark text-light border-secondary" id="tempo" name="tempo" value="88" min="50" max="250" required>
+                        </div>
+                        <div class="col-md-3 mb-2">
+                            <label for="time_signature" class="form-label small text-secondary">Beats</label>
+                            <select class="form-select bg-dark text-light border-secondary" id="time_signature" name="time_signature">
+                                <option value="3">3/4</option>
+                                <option value="4" selected>4/4</option>
+                                <option value="5">5/4</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Explicit Checkbox & Models -->
+                    <div class="row mb-4 align-items-center">
+                        <div class="col-md-4 mb-2">
+                            <div class="form-check form-switch mt-2">
+                                <input class="form-check-input bg-dark border-secondary" type="checkbox" id="explicit" name="explicit">
+                                <label class="form-check-label small text-secondary" for="explicit">Explicit Track Content</label>
+                            </div>
+                        </div>
+                        <div class="col-md-4 mb-2">
+                            <label for="reg_model" class="form-label small text-secondary">Regression Model</label>
+                            <select class="form-select bg-dark text-light border-secondary" id="reg_model" name="reg_model">
+                                <option value="best_model" selected>Use Best (Linear Regression)</option>
+                                <option value="linear_regression">Linear Regression</option>
+                                <option value="ridge">Ridge</option>
+                                <option value="lasso">Lasso</option>
+                                <option value="elastic_net">Elastic Net</option>
+                                <option value="decision_tree">Decision Tree</option>
+                                <option value="random_forest">Random Forest</option>
+                                <option value="gradient_boosting">Gradient Boosting</option>
+                                <option value="xgboost">XGBoost</option>
+                                <option value="lightgbm">LightGBM</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4 mb-2">
+                            <label for="clf_model" class="form-label small text-secondary">Classifier Model</label>
+                            <select class="form-select bg-dark text-light border-secondary" id="clf_model" name="clf_model">
+                                <option value="best_model" selected>Use Best (Logistic Regression)</option>
+                                <option value="logistic_regression">Logistic Regression</option>
+                                <option value="decision_tree">Decision Tree</option>
+                                <option value="random_forest">Random Forest</option>
+                                <option value="gradient_boosting">Gradient Boosting</option>
+                                <option value="xgboost">XGBoost</option>
+                                <option value="lightgbm">LightGBM</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Submit Button -->
+                    <button type="submit" class="btn btn-success btn-lg w-100 fw-bold">
+                        <i class="fa-solid fa-play me-2"></i>Generate Popularity & Skip Analysis
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Right Column: Results & Prediction Trace -->
+    <div class="col-lg-6 mb-4">
+        <!-- Results Card -->
+        <div class="card bg-black border-secondary shadow mb-4">
+            <div class="card-header bg-dark border-secondary">
+                <h5 class="card-title mb-0 text-success fw-semibold"><i class="fa-solid fa-chart-line me-2"></i>Prediction Outcomes</h5>
+            </div>
+            <div class="card-body">
+                <div id="resultsPlaceholder" class="text-center py-5 text-secondary">
+                    <i class="fa-solid fa-wand-magic-sparkles display-3 mb-3 text-success opacity-50"></i>
+                    <p class="mb-0">Fill in the track parameters on the left and submit to trigger predictions.</p>
+                </div>
+                
+                <div id="resultsContent" class="d-none">
+                    <!-- Predicted Popularity -->
+                    <div class="row align-items-center mb-4">
+                        <div class="col-md-6 text-center">
+                            <div class="p-4 bg-dark border border-secondary rounded shadow-sm">
+                                <h6 class="text-secondary small uppercase">Predicted Popularity</h6>
+                                <div class="display-3 fw-bold text-success" id="pred_popularity">--</div>
+                                <div class="text-secondary small">Scale: 0 to 100 points</div>
+                            </div>
+                        </div>
+                        <!-- Skip probability category -->
+                        <div class="col-md-6">
+                            <div class="p-4 bg-dark border border-secondary rounded shadow-sm text-center">
+                                <h6 class="text-secondary small uppercase mb-1">Skip Risk Category</h6>
+                                <span class="badge fs-5 py-2 px-3 mb-2" id="skip_risk_badge">--</span>
+                                <div>
+                                    <span class="text-secondary small">Probability: </span>
+                                    <strong class="text-light" id="pred_skip_prob">--</strong>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Skip Probability Bar -->
+                    <div class="mb-4 px-2">
+                        <label class="form-label small text-secondary d-flex justify-content-between">
+                            <span>Skip Probability Percentage</span>
+                            <span id="skip_pct_label" class="fw-bold">0%</span>
+                        </label>
+                        <div class="progress bg-dark border border-secondary" style="height: 20px;">
+                            <div class="progress-bar progress-bar-striped progress-bar-animated" id="skip_progress_bar" role="progressbar" style="width: 0%;"></div>
+                        </div>
+                    </div>
+
+                    <!-- Telemetry metadata -->
+                    <div class="row small text-secondary border-top border-secondary pt-3">
+                        <div class="col-6">
+                            <span class="d-block">Reg Model: <strong class="text-light" id="meta_reg_model">--</strong></span>
+                            <span class="d-block">Clf Model: <strong class="text-light" id="meta_clf_model">--</strong></span>
+                        </div>
+                        <div class="col-6 text-end">
+                            <span class="d-block">Model Version: <strong class="text-light" id="meta_version">--</strong></span>
+                            <span class="d-block">Logged Event: <strong class="text-success"><i class="fa-solid fa-circle-check"></i> Active</strong></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Prediction Trace Flowchart -->
+        <div class="card bg-black border-secondary shadow">
+            <div class="card-header bg-dark border-secondary">
+                <h5 class="card-title mb-0 text-success fw-semibold"><i class="fa-solid fa-route me-2"></i>Prediction Trace Flow</h5>
+            </div>
+            <div class="card-body">
+                <div class="prediction-trace-flow flex-column gap-3 d-flex" id="traceFlow">
+                    <!-- Flow nodes -->
+                    <div class="trace-node d-flex align-items-center p-2 rounded border border-secondary bg-dark text-secondary" id="node-input">
+                        <div class="node-icon bg-secondary text-dark rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 32px; height: 32px;">
+                            <i class="fa-solid fa-keyboard"></i>
+                        </div>
+                        <div>
+                            <div class="fw-bold small text-light">1. User Input</div>
+                            <div class="x-small text-secondary">Audio features and genre entered in UI form.</div>
+                        </div>
+                    </div>
+                    <div class="trace-arrow text-center text-secondary small py-0 my-0"><i class="fa-solid fa-arrow-down"></i></div>
+
+                    <div class="trace-node d-flex align-items-center p-2 rounded border border-secondary bg-dark text-secondary" id="node-api">
+                        <div class="node-icon bg-secondary text-dark rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 32px; height: 32px;">
+                            <i class="fa-solid fa-server"></i>
+                        </div>
+                        <div>
+                            <div class="fw-bold small text-light">2. Flask API Routing</div>
+                            <div class="x-small text-secondary">AJAX POST request dispatched to endpoint <code>/api/predict</code>.</div>
+                        </div>
+                    </div>
+                    <div class="trace-arrow text-center text-secondary small py-0 my-0"><i class="fa-solid fa-arrow-down"></i></div>
+
+                    <div class="trace-node d-flex align-items-center p-2 rounded border border-secondary bg-dark text-secondary" id="node-validation">
+                        <div class="node-icon bg-secondary text-dark rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 32px; height: 32px;">
+                            <i class="fa-solid fa-shield-check"></i>
+                        </div>
+                        <div>
+                            <div class="fw-bold small text-light">3. Schema Validation</div>
+                            <div class="x-small text-secondary">Flask parses input JSON and verifies bounding numeric ranges.</div>
+                        </div>
+                    </div>
+                    <div class="trace-arrow text-center text-secondary small py-0 my-0"><i class="fa-solid fa-arrow-down"></i></div>
+
+                    <div class="trace-node d-flex align-items-center p-2 rounded border border-secondary bg-dark text-secondary" id="node-preprocessing">
+                        <div class="node-icon bg-secondary text-dark rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 32px; height: 32px;">
+                            <i class="fa-solid fa-sliders"></i>
+                        </div>
+                        <div>
+                            <div class="fw-bold small text-light">4. Preprocessing Pipeline</div>
+                            <div class="x-small text-secondary">Applies standardized scaling (Scaler) and creates one-hot sparse genre matrix.</div>
+                        </div>
+                    </div>
+                    <div class="trace-arrow text-center text-secondary small py-0 my-0"><i class="fa-solid fa-arrow-down"></i></div>
+
+                    <div class="trace-node d-flex align-items-center p-2 rounded border border-secondary bg-dark text-secondary" id="node-model">
+                        <div class="node-icon bg-secondary text-dark rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 32px; height: 32px;">
+                            <i class="fa-solid fa-brain"></i>
+                        </div>
+                        <div>
+                            <div class="fw-bold small text-light">5. Saved Model Inference</div>
+                            <div class="x-small text-secondary">Joblib loads regression & classifier models to perform forward inference.</div>
+                        </div>
+                    </div>
+                    <div class="trace-arrow text-center text-secondary small py-0 my-0"><i class="fa-solid fa-arrow-down"></i></div>
+
+                    <div class="trace-node d-flex align-items-center p-2 rounded border border-secondary bg-dark text-secondary" id="node-logging">
+                        <div class="node-icon bg-secondary text-dark rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 32px; height: 32px;">
+                            <i class="fa-solid fa-file-invoice"></i>
+                        </div>
+                        <div>
+                            <div class="fw-bold small text-light">6. Telemetry & Log Ingestion</div>
+                            <div class="x-small text-secondary">Inputs and outputs logged with timestamp to <code>logs/predictions.csv</code>.</div>
+                        </div>
+                    </div>
+                    <div class="trace-arrow text-center text-secondary small py-0 my-0"><i class="fa-solid fa-arrow-down"></i></div>
+
+                    <div class="trace-node d-flex align-items-center p-2 rounded border border-secondary bg-dark text-secondary" id="node-response">
+                        <div class="node-icon bg-secondary text-dark rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 32px; height: 32px;">
+                            <i class="fa-solid fa-reply-all"></i>
+                        </div>
+                        <div>
+                            <div class="fw-bold small text-light">7. UI Response Rendering</div>
+                            <div class="x-small text-secondary">API returns JSON payload, and browser dynamically updates cards and progress bars.</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,220 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row">
+    <!-- Jumbotron Header -->
+    <div class="col-12 mb-4">
+        <div class="p-5 bg-dark border border-secondary rounded-3 shadow">
+            <h1 class="display-5 fw-bold text-success"><i class="fa-solid fa-square-poll-vertical me-2"></i>PlaylistPulse</h1>
+            <p class="col-md-10 fs-5 text-secondary">
+                An academic machine learning suite designed to explore the Spotify audio features landscape. It performs <strong>regression analysis</strong> to forecast track popularity, and <strong>classification modeling</strong> to identify skip probability and track-skipping risks using state-of-the-art predictive algorithms.
+            </p>
+            <hr class="my-4 border-secondary">
+            <div class="d-flex flex-wrap gap-3">
+                <a class="btn btn-success btn-lg" href="{{ url_for('predict_page') }}"><i class="fa-solid fa-circle-play me-2"></i>Try Predictor</a>
+                <a class="btn btn-outline-light btn-lg" href="{{ url_for('experiments') }}"><i class="fa-solid fa-microscope me-2"></i>View Experiments</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Dataset Quick Stats -->
+<div class="row mb-5">
+    <div class="col-md-3 mb-3">
+        <div class="card bg-black border-secondary shadow-sm text-center py-4">
+            <div class="card-body">
+                <div class="text-success display-6 mb-2"><i class="fa-solid fa-music"></i></div>
+                <h3 class="card-title fw-bold">114,000</h3>
+                <p class="card-text text-secondary uppercase small tracking-wider">Total Spotify Tracks</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 mb-3">
+        <div class="card bg-black border-secondary shadow-sm text-center py-4">
+            <div class="card-body">
+                <div class="text-info display-6 mb-2"><i class="fa-solid fa-sliders"></i></div>
+                <h3 class="card-title fw-bold">20</h3>
+                <p class="card-text text-secondary uppercase small tracking-wider">Features Analyzed</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 mb-3">
+        <div class="card bg-black border-secondary shadow-sm text-center py-4">
+            <div class="card-body">
+                <div class="text-warning display-6 mb-2"><i class="fa-solid fa-fire"></i></div>
+                <h3 class="card-title fw-bold">33.2 / 100</h3>
+                <p class="card-text text-secondary uppercase small tracking-wider">Average Popularity</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 mb-3">
+        <div class="card bg-black border-secondary shadow-sm text-center py-4">
+            <div class="card-body">
+                <div class="text-danger display-6 mb-2"><i class="fa-solid fa-forward-step"></i></div>
+                <h3 class="card-title fw-bold">20.6%</h3>
+                <p class="card-text text-secondary uppercase small tracking-wider">Skip Probability Proxy</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Model Performance Tables -->
+<div class="row">
+    <!-- Regression Table -->
+    <div class="col-lg-6 mb-4">
+        <div class="card bg-black border-secondary shadow h-100">
+            <div class="card-header bg-dark border-secondary py-3">
+                <h4 class="card-title mb-0 text-success fw-bold">
+                    <i class="fa-solid fa-arrow-trend-up me-2"></i>Popularity Prediction (Regression)
+                </h4>
+            </div>
+            <div class="card-body">
+                <p class="text-secondary small">Comparison of models trained to predict continuous <code>popularity</code> scores (0-100). Sorted by Test $R^2$ performance.</p>
+                <div class="table-responsive">
+                    <table class="table table-dark table-hover align-middle border-secondary">
+                        <thead>
+                            <tr class="text-secondary small border-secondary">
+                                <th>Algorithm</th>
+                                <th>MAE</th>
+                                <th>RMSE</th>
+                                <th>R² Score</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for name, metrics in reg_metrics %}
+                            <tr class="{% if name == best_reg_name %}table-success text-success border-success{% endif %}">
+                                <td class="fw-semibold text-capitalize">{{ name.replace('_', ' ') }}</td>
+                                <td>{{ "%.3f"|format(metrics.test.mae) }}</td>
+                                <td>{{ "%.3f"|format(metrics.test.rmse) }}</td>
+                                <td>{{ "%.4f"|format(metrics.test.r2) }}</td>
+                                <td>
+                                    {% if name == best_reg_name %}
+                                    <span class="badge bg-success">Best (L2)</span>
+                                    {% else %}
+                                    <span class="badge bg-secondary text-dark">Evaluated</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                <div class="alert alert-dark border-secondary mt-3 mb-0">
+                    <i class="fa-solid fa-circle-info text-success me-2"></i>
+                    <strong>Under the Hood:</strong> The linear regression and tree algorithms evaluate the relationship of tempo, key, loudness, energy, and genre on target popularity. Scaling features makes a massive performance difference for linear models (see Tuning page).
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Classification Table -->
+    <div class="col-lg-6 mb-4">
+        <div class="card bg-black border-secondary shadow h-100">
+            <div class="card-header bg-dark border-secondary py-3">
+                <h4 class="card-title mb-0 text-success fw-bold">
+                    <i class="fa-solid fa-forward-step-fast me-2"></i>Skip Behavior (Classification)
+                </h4>
+            </div>
+            <div class="card-body">
+                <p class="text-secondary small">Comparison of models trained to classify binary skip behavior (skipped: 1, not skipped: 0). Evaluated on balanced parameters.</p>
+                <div class="table-responsive">
+                    <table class="table table-dark table-hover align-middle border-secondary">
+                        <thead>
+                            <tr class="text-secondary small border-secondary">
+                                <th>Algorithm</th>
+                                <th>Accuracy</th>
+                                <th>F1-Score</th>
+                                <th>ROC-AUC</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for name, metrics in clf_metrics %}
+                            <tr class="{% if name == best_clf_name %}table-success text-success border-success{% endif %}">
+                                <td class="fw-semibold text-capitalize">{{ name.replace('_', ' ') }}</td>
+                                <td>{{ "%.3f"|format(metrics.test.accuracy) }}</td>
+                                <td>{{ "%.3f"|format(metrics.test.f1) }}</td>
+                                <td>{{ "%.3f"|format(metrics.test.roc_auc) }}</td>
+                                <td>
+                                    {% if name == best_clf_name %}
+                                    <span class="badge bg-success">Best Model</span>
+                                    {% else %}
+                                    <span class="badge bg-secondary text-dark">Evaluated</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                            <tr class="border-top border-secondary">
+                                <td class="fw-semibold">Multinomial LogReg (3-class)</td>
+                                <td>{{ "%.3f"|format(multi_metrics.test.accuracy) }}</td>
+                                <td>{{ "%.3f"|format(multi_metrics.test.f1) }} (Macro)</td>
+                                <td>{{ "%.3f"|format(multi_metrics.test.roc_auc) }} (Macro)</td>
+                                <td><span class="badge bg-purple">Multiclass</span></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="alert alert-dark border-secondary mt-3 mb-0">
+                    <i class="fa-solid fa-circle-info text-info me-2"></i>
+                    <strong>Risk Category:</strong> Multinomial Logistic Regression predicts the 3-class skip risk category (Low, Medium, High) with high precision, demonstrating a classic multinomial cross-entropy classification.
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ML Lifecycle Visualizer -->
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="card bg-black border-secondary shadow mb-4">
+            <div class="card-header bg-dark border-secondary py-3">
+                <h4 class="card-title mb-0 text-success fw-bold">
+                    <i class="fa-solid fa-arrows-spin me-2"></i>PlaylistPulse ML Lifecycle
+                </h4>
+            </div>
+            <div class="card-body">
+                <p class="text-secondary mb-4">A complete visual mapping of the ML lifecycle components demonstrated inside this project, representing a production-grade ML engineering pipeline.</p>
+                <div class="row text-center px-2">
+                    <div class="col-md-2 mb-3">
+                        <div class="p-3 bg-dark border border-secondary rounded shadow-sm h-100">
+                            <h5 class="text-success fw-bold">1. Data Ingestion</h5>
+                            <p class="small text-secondary mb-0">Spotify tracks dataset containing 114,000 records loaded from CSV file.</p>
+                        </div>
+                    </div>
+                    <div class="col-md-2 mb-3">
+                        <div class="p-3 bg-dark border border-secondary rounded shadow-sm h-100">
+                            <h5 class="text-success fw-bold">2. Prep & Proxy</h5>
+                            <p class="small text-secondary mb-0">Null values imputed. Synthetic skip proxies engineered using acoustic combinations.</p>
+                        </div>
+                    </div>
+                    <div class="col-md-2 mb-3">
+                        <div class="p-3 bg-dark border border-secondary rounded shadow-sm h-100">
+                            <h5 class="text-success fw-bold">3. Pipeline Scale</h5>
+                            <p class="small text-secondary mb-0">Standard scaling numeric inputs, one-hot encoding genres, and training/test splits.</p>
+                        </div>
+                    </div>
+                    <div class="col-md-2 mb-3">
+                        <div class="p-3 bg-dark border border-secondary rounded shadow-sm h-100">
+                            <h5 class="text-success fw-bold">4. Train & Tune</h5>
+                            <p class="small text-secondary mb-0">Grid alpha sweeps for regularized models and depth sweeps for tree estimators.</p>
+                        </div>
+                    </div>
+                    <div class="col-md-2 mb-3">
+                        <div class="p-3 bg-dark border border-secondary rounded shadow-sm h-100">
+                            <h5 class="text-success fw-bold">5. Model Serialization</h5>
+                            <p class="small text-secondary mb-0">Serializing fitted scalers, encoders, and predictive models using <code>Joblib</code>.</p>
+                        </div>
+                    </div>
+                    <div class="col-md-2 mb-3">
+                        <div class="p-3 bg-dark border border-secondary rounded shadow-sm h-100">
+                            <h5 class="text-success fw-bold">6. Monitoring & Logs</h5>
+                            <p class="small text-secondary mb-0">Prediction logger registers runtime requests, providing telemetry and data drift checks.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

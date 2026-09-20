@@ -1,0 +1,133 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-12">
+        <h2 class="text-success fw-bold"><i class="fa-solid fa-flask-vial me-2"></i>Model Tuning & Experiments</h2>
+        <p class="text-secondary">Explore core machine learning concepts through empirical experiment runs on the Spotify dataset.</p>
+    </div>
+</div>
+
+<!-- Tabs for Experiments -->
+<div class="row">
+    <div class="col-12">
+        <div class="card bg-black border-secondary shadow mb-4">
+            <div class="card-header bg-dark border-secondary">
+                <ul class="nav nav-tabs card-header-tabs" id="experimentTabs" role="tablist">
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link active text-success fw-bold" id="scaling-tab" data-bs-toggle="tab" data-bs-target="#scaling" type="button" role="tab"><i class="fa-solid fa-arrows-left-right me-1"></i> Feature Scaling</button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link text-success fw-bold" id="regularization-tab" data-bs-toggle="tab" data-bs-target="#regularization" type="button" role="tab"><i class="fa-solid fa-sliders me-1"></i> L1/L2 Regularization</button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link text-success fw-bold" id="bias-variance-tab" data-bs-toggle="tab" data-bs-target="#bias-variance" type="button" role="tab"><i class="fa-solid fa-scale-balanced me-1"></i> Bias-Variance Trade-off</button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link text-success fw-bold" id="importance-tab" data-bs-toggle="tab" data-bs-target="#importance" type="button" role="tab"><i class="fa-solid fa-ranking-star me-1"></i> Feature Importance</button>
+                    </li>
+                </ul>
+            </div>
+            <div class="card-body">
+                <div class="tab-content" id="myTabContent">
+                    
+                    <!-- 1. Feature Scaling Tab -->
+                    <div class="tab-pane fade show active" id="scaling" role="tabpanel">
+                        <div class="row align-items-center">
+                            <div class="col-lg-6 mb-3">
+                                <h4 class="text-success fw-bold">Linear Models With vs. Without Scaling</h4>
+                                <p class="text-light">
+                                    Feature scaling using standard standardization ($z = \frac{x - \mu}{\sigma}$) is critical for linear models, especially when features have different ranges.
+                                </p>
+                                <ul>
+                                    <li><strong>Without Scaling:</strong> The features with large scales (e.g. <code>duration_ms</code> in hundreds of thousands, <code>tempo</code> around 120) dominate the loss function optimization. The coefficients assigned are inversely proportional to their scale, making them uninterpretable. Test $R^2$ is extremely poor: <strong>{{ "%.4f"|format(scaling_metrics.unscaled_metrics.test.r2) }}</strong>.</li>
+                                    <li><strong>With Scaling:</strong> All features are centered at mean 0 and variance 1. The coefficient weights directly reflect feature importance: a larger coefficient indicates a stronger relative impact on target popularity. Test $R^2$ jumps significantly to <strong>{{ "%.4f"|format(scaling_metrics.scaled_metrics.test.r2) }}</strong>.</li>
+                                </ul>
+                                <div class="alert alert-warning bg-dark border-warning text-warning small">
+                                    <i class="fa-solid fa-triangle-exclamation me-1"></i>
+                                    <strong>Important:</strong> Distance-based estimators (like KNN or SVM) and regularized linear models (Ridge/Lasso) will fail or yield incorrect predictions without proper scaling.
+                                </div>
+                            </div>
+                            <div class="col-lg-6 text-center">
+                                <img src="{{ url_for('static', filename='images/regression_scaling_coefs.png') }}" class="img-fluid rounded border border-secondary bg-dark" alt="Scaling Coefficients Comparison">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 2. L1/L2 Regularization Tab -->
+                    <div class="tab-pane fade" id="regularization" role="tabpanel">
+                        <div class="row">
+                            <div class="col-lg-6 mb-3">
+                                <h4 class="text-success fw-bold">Regularization Alpha Sweep (L1 vs. L2)</h4>
+                                <p class="text-light">
+                                    We analyzed the shrinkage behavior of coefficients under L1 (Lasso), L2 (Ridge), and Elastic Net (L1+L2 blend) penalty terms:
+                                </p>
+                                <ul>
+                                    <li><strong>Ridge Regression (L2 Penalty):</strong> Adds a penalty on the squared magnitudes of the coefficients ($\lambda \sum w_i^2$). As alpha increases, weights shrink continuously toward zero, but never become exactly zero. This helps handle multicollinearity by distributing weight.</li>
+                                    <li><strong>Lasso Regression (L1 Penalty):</strong> Adds a penalty on the absolute magnitudes of the coefficients ($\lambda \sum |w_i|$). Lasso drives less important features' coefficients to exactly zero, effectively performing automatic feature selection.</li>
+                                    <li><strong>Elastic Net (L1 + L2):</strong> Blends both penalties, balancing weight distribution and feature selection.</li>
+                                </ul>
+                                <div class="alert alert-dark border-secondary small">
+                                    <i class="fa-solid fa-circle-info text-success me-1"></i>
+                                    Look at the Lasso plot on the right: as alpha increases past $0.1$, almost all features shrink to $0.0$, leaving only the most critical predictors active.
+                                </div>
+                            </div>
+                            <div class="col-lg-6 text-center">
+                                <img src="{{ url_for('static', filename='images/regression_regularization_path.png') }}" class="img-fluid rounded border border-secondary bg-dark mb-3" alt="Regularization Path">
+                                <img src="{{ url_for('static', filename='images/regression_alpha_comparison.png') }}" class="img-fluid rounded border border-secondary bg-dark" alt="Alpha vs MSE" style="max-height: 250px;">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 3. Bias-Variance Tab -->
+                    <div class="tab-pane fade" id="bias-variance" role="tabpanel">
+                        <div class="row align-items-center">
+                            <div class="col-lg-6 mb-3">
+                                <h4 class="text-success fw-bold">Decision Tree Overfitting Curve (Bias-Variance)</h4>
+                                <p class="text-light">
+                                    By varying the <code>max_depth</code> of a Decision Tree, we observe the classic bias-variance trade-off in action:
+                                </p>
+                                <ul>
+                                    <li><strong>Underfitting Zone (Depth 1-4):</strong> The model has too few splits. Both training and testing error are high because the model is too simple to capture the relationship (High Bias).</li>
+                                    <li><strong>Optimal Zone (Depth 5-7):</strong> Testing error reaches its minimum. The model generalizes well to unseen validation data.</li>
+                                    <li><strong>Overfitting Zone (Depth 8-15):</strong> Training error drops toward zero, but testing error (MSE) begins to climb. The model is memorizing noise in the training set and fails to generalize (High Variance).</li>
+                                </ul>
+                                <div class="alert alert-danger bg-dark border-danger text-danger small">
+                                    <i class="fa-solid fa-shield-halved me-1"></i>
+                                    <strong>Ensemble Mitigation:</strong> Random Forests and Gradient Boosted trees reduce this overfitting tendency. Random Forest reduces variance via bootstrap aggregation (bagging), while Gradient Boosting reduces bias sequentially.
+                                </div>
+                            </div>
+                            <div class="col-lg-6 text-center">
+                                <img src="{{ url_for('static', filename='images/regression_dt_depth.png') }}" class="img-fluid rounded border border-secondary bg-dark" alt="Decision Tree Depth Sweep">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 4. Feature Importance Tab -->
+                    <div class="tab-pane fade" id="importance" role="tabpanel">
+                        <div class="row">
+                            <div class="col-lg-6 mb-3">
+                                <h4 class="text-success fw-bold">Tree Model Feature Importances</h4>
+                                <p class="text-light">
+                                    Ensemble tree models (Random Forest) let us extract the relative split importance of each feature. We compare the top features driving track popularity vs. user skip behavior:
+                                </p>
+                                <ul>
+                                    <li><strong>Popularity Predictors:</strong> The top features are typically the track's genre encoding, <code>loudness</code>, <code>duration_ms</code>, and <code>acousticness</code>. Acoustic characteristics play a major role in classifying genres, which in turn strongly influence popularity.</li>
+                                    <li><strong>Skip Behavior Predictors:</strong> The features <code>danceability</code>, <code>energy</code>, <code>acousticness</code>, <code>speechiness</code>, and <code>valence</code> carry the highest weight. This is expected as our skip proxy is mathematically defined by these active listening characteristics, and the Random Forest model successfully identified these underlying patterns!</li>
+                                </ul>
+                            </div>
+                            <div class="col-lg-6 text-center">
+                                <div class="mb-3 text-start small text-secondary">Regression Popularity Feature Importances:</div>
+                                <img src="{{ url_for('static', filename='images/regression_feature_importance.png') }}" class="img-fluid rounded border border-secondary bg-dark mb-3" alt="Regression Feature Importances" style="max-height: 250px;">
+                                <div class="text-start small text-secondary">Classification Skip Feature Importances:</div>
+                                <img src="{{ url_for('static', filename='images/classification_feature_importance.png') }}" class="img-fluid rounded border border-secondary bg-dark" alt="Classification Feature Importances" style="max-height: 250px;">
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,263 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-12">
+        <h2 class="text-success fw-bold"><i class="fa-solid fa-graduation-cap me-2"></i>ML Concepts & System Architecture</h2>
+        <p class="text-secondary">Comprehensive academic curriculum mapping: How Modules M1, M2, and M3 are mathematically grounded and implemented in code.</p>
+    </div>
+</div>
+
+<!-- Navigation Pills for M1, M2, M3 -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card bg-black border-secondary shadow">
+            <div class="card-header bg-dark border-secondary">
+                <ul class="nav nav-pills card-header-pills" id="conceptPills" role="tablist">
+                    <li class="nav-item me-2" role="presentation">
+                        <button class="nav-link active bg-success text-white fw-bold" id="m1-tab" data-bs-toggle="pill" data-bs-target="#m1" type="button" role="tab">
+                            <i class="fa-solid fa-arrows-spin me-1"></i> M1: ML System Lifecycle
+                        </button>
+                    </li>
+                    <li class="nav-item me-2" role="presentation">
+                        <button class="nav-link bg-dark text-success border border-success fw-bold" id="m2-tab" data-bs-toggle="pill" data-bs-target="#m2" type="button" role="tab">
+                            <i class="fa-solid fa-chart-line me-1"></i> M2: Linear Models at Depth
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link bg-dark text-success border border-success fw-bold" id="m3-tab" data-bs-toggle="pill" data-bs-target="#m3" type="button" role="tab">
+                            <i class="fa-solid fa-tree me-1"></i> M3: Tree-Based Ensembles
+                        </button>
+                    </li>
+                </ul>
+            </div>
+            <div class="card-body p-4">
+                <div class="tab-content" id="conceptTabContent">
+
+                    <!-- ==================== M1: ML SYSTEM LIFECYCLE ==================== -->
+                    <div class="tab-pane fade show active" id="m1" role="tabpanel">
+                        <h4 class="text-success fw-bold mb-3"><i class="fa-solid fa-cubes me-2"></i>Module 1: The Machine Learning System Lifecycle</h4>
+                        <p class="text-light">
+                            In production systems, machine learning is not an isolated modeling notebook — it is an end-to-end engineering pipeline connecting data ingestion to real-time inference, persistent telemetry, and drift monitoring.
+                        </p>
+
+                        <!-- Codebase mapping table -->
+                        <div class="card bg-dark border-secondary my-4">
+                            <div class="card-header border-secondary text-success fw-semibold">
+                                <i class="fa-solid fa-code me-2"></i>Where Each ML Lifecycle Stage Lives in PlaylistPulse Codebase
+                            </div>
+                            <div class="card-body p-0">
+                                <div class="table-responsive">
+                                    <table class="table table-dark table-hover mb-0 small">
+                                        <thead>
+                                            <tr class="text-secondary border-secondary">
+                                                <th>Lifecycle Stage</th>
+                                                <th>Code Location</th>
+                                                <th>Core Responsibility</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr>
+                                                <td class="text-success fw-semibold">1. Data Ingestion & Cleaning</td>
+                                                <td><code>src/data_preprocessing.py</code></td>
+                                                <td>Loads 114,000 raw Spotify tracks, imputes missing values, and formats types.</td>
+                                            </tr>
+                                            <tr>
+                                                <td class="text-success fw-semibold">2. Feature Engineering & Proxy</td>
+                                                <td><code>src/data_preprocessing.py</code></td>
+                                                <td>Constructs continuous skip probability proxy, binary target, and 3-class risk category.</td>
+                                            </tr>
+                                            <tr>
+                                                <td class="text-success fw-semibold">3. Preprocessing & Scaling</td>
+                                                <td><code>src/data_preprocessing.py</code></td>
+                                                <td>Fits <code>StandardScaler</code> and <code>OneHotEncoder</code>; saves to <code>models/*.joblib</code>.</td>
+                                            </tr>
+                                            <tr>
+                                                <td class="text-success fw-semibold">4. Model Training & Tuning</td>
+                                                <td><code>src/train_regression.py</code> & <code>src/train_classification.py</code></td>
+                                                <td>Trains 16 models across linear, regularized, and ensemble algorithms with hyperparameter sweeps.</td>
+                                            </tr>
+                                            <tr>
+                                                <td class="text-success fw-semibold">5. Model Packaging (Registry)</td>
+                                                <td><code>models/</code> & <code>models/metrics_summary.json</code></td>
+                                                <td>Stores serialised weights, preprocessors, and benchmark metrics for zero-delay startup.</td>
+                                            </tr>
+                                            <tr>
+                                                <td class="text-success fw-semibold">6. Serving REST API & UI</td>
+                                                <td><code>app.py</code> & <code>templates/</code></td>
+                                                <td>Flask web service exposing <code>POST /api/predict</code> with interactive dashboard.</td>
+                                            </tr>
+                                            <tr>
+                                                <td class="text-success fw-semibold">7. Telemetry & Monitoring</td>
+                                                <td><code>logs/predictions.csv</code> & <code>app.py</code></td>
+                                                <td>Logs every inference payload and runs live Data Drift sliding window calculations.</td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row g-4 mt-2">
+                            <div class="col-lg-6">
+                                <div class="p-3 bg-dark border border-secondary rounded h-100">
+                                    <h5 class="text-success fw-bold"><i class="fa-solid fa-shield-halved me-2"></i>Training-Serving Skew Prevention</h5>
+                                    <p class="small text-secondary mb-2">
+                                        The most common production failure in ML occurs when feature transformations at inference time differ from those applied during training (Training-Serving Skew).
+                                    </p>
+                                    <p class="small text-light mb-0">
+                                        <strong>How PlaylistPulse solves it:</strong> We serialize the fitted <code>StandardScaler</code> and <code>OneHotEncoder</code> directly into Joblib artifacts during training. At inference time, <code>app.py</code> loads the exact same objects to transform user input, guaranteeing identical mean, variance, and one-hot column alignment without any feature mismatch.
+                                    </p>
+                                </div>
+                            </div>
+                            <div class="col-lg-6">
+                                <div class="p-3 bg-dark border border-secondary rounded h-100">
+                                    <h5 class="text-success fw-bold"><i class="fa-solid fa-route me-2"></i>End-to-End Prediction Trace</h5>
+                                    <p class="small text-secondary mb-2">
+                                        Every single-row prediction traces through a strict 7-stage deterministic execution pipeline:
+                                    </p>
+                                    <ol class="small text-light mb-0 ps-3">
+                                        <li><strong>User Input:</strong> Audio characteristics entered via sliders and dropdowns.</li>
+                                        <li><strong>HTTP POST:</strong> AJAX payload sent to <code>/api/predict</code>.</li>
+                                        <li><strong>Validation:</strong> Type checking & boundary range assertions.</li>
+                                        <li><strong>Preprocessing:</strong> Scaling numerical values + One-Hot genre vectorization.</li>
+                                        <li><strong>Model Inference:</strong> Forward pass through loaded Joblib model.</li>
+                                        <li><strong>Telemetry Logging:</strong> Async write to <code>logs/predictions.csv</code>.</li>
+                                        <li><strong>Response Rendering:</strong> JSON response populates dashboard widgets.</li>
+                                    </ol>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- ==================== M2: LINEAR MODELS AT DEPTH ==================== -->
+                    <div class="tab-pane fade" id="m2" role="tabpanel">
+                        <h4 class="text-success fw-bold mb-3"><i class="fa-solid fa-sliders me-2"></i>Module 2: Supervised Learning — Linear Models at Depth</h4>
+                        <p class="text-light">
+                            Linear models formulate prediction as a linear combination of input features: $\hat{y} = \mathbf{w}^T \mathbf{x} + b$. They offer strong interpretability, rapid training, and clear geometric properties.
+                        </p>
+
+                        <div class="row g-4 my-2">
+                            <div class="col-lg-6">
+                                <div class="p-3 bg-dark border border-secondary rounded h-100">
+                                    <h5 class="text-success fw-bold">1. Feature Scaling & Standardization</h5>
+                                    <p class="small text-secondary">
+                                        Transforming inputs using standard score: $z = \frac{x - \mu}{\sigma}$.
+                                    </p>
+                                    <p class="small text-light">
+                                        Without scaling, features with large numeric scales (such as <code>duration_ms</code> in hundreds of thousands) overpower the loss gradient, causing linear regression $R^2$ to collapse to <strong>0.036</strong>. With <code>StandardScaler</code>, all features have unit variance, boosting test $R^2$ to <strong>0.264</strong> and making weights directly interpretable.
+                                    </p>
+                                    <a href="{{ url_for('experiments') }}" class="btn btn-sm btn-outline-success">View Scaling Experiment</a>
+                                </div>
+                            </div>
+                            <div class="col-lg-6">
+                                <div class="p-3 bg-dark border border-secondary rounded h-100">
+                                    <h5 class="text-success fw-bold">2. Regularization Geometry: L1 vs. L2</h5>
+                                    <p class="small text-secondary">
+                                        Constraining model complexity to prevent overfitting and multicollinearity:
+                                    </p>
+                                    <ul class="small text-light ps-3 mb-2">
+                                        <li><strong>Ridge ($L_2$):</strong> $\min \|\mathbf{y} - \mathbf{X}\mathbf{w}\|_2^2 + \lambda \|\mathbf{w}\|_2^2$. Spherical constraint smoothly shrinks coefficients toward zero without nullifying them.</li>
+                                        <li><strong>Lasso ($L_1$):</strong> $\min \|\mathbf{y} - \mathbf{X}\mathbf{w}\|_2^2 + \lambda \|\mathbf{w}\|_1$. Rhombus constraint with sharp corners drives non-essential weights to exactly zero, performing automatic feature selection.</li>
+                                        <li><strong>Elastic Net ($L_1 + L_2$):</strong> Combines $L_1$ feature selection with $L_2$ group selection.</li>
+                                    </ul>
+                                    <a href="{{ url_for('experiments') }}" class="btn btn-sm btn-outline-success">View Regularization Paths</a>
+                                </div>
+                            </div>
+                            <div class="col-lg-6">
+                                <div class="p-3 bg-dark border border-secondary rounded h-100">
+                                    <h5 class="text-success fw-bold">3. Binary Logistic Regression</h5>
+                                    <p class="small text-secondary">
+                                        Estimates skip probability via sigmoid activation: $P(y=1|\mathbf{x}) = \sigma(\mathbf{w}^T \mathbf{x}) = \frac{1}{1 + e^{-\mathbf{w}^T \mathbf{x}}}$.
+                                    </p>
+                                    <p class="small text-light">
+                                        Trained using Binary Cross-Entropy (Log Loss). Achieves <strong>92.7% Test Accuracy</strong> and <strong>0.973 ROC-AUC</strong> for binary skip behavior on Spotify audio tracks.
+                                    </p>
+                                </div>
+                            </div>
+                            <div class="col-lg-6">
+                                <div class="p-3 bg-dark border border-secondary rounded h-100">
+                                    <h5 class="text-success fw-bold">4. Multinomial Logistic Regression (Softmax)</h5>
+                                    <p class="small text-secondary">
+                                        Generalizes binary logistic regression to multi-class ($K=3$: Low, Medium, High Risk):
+                                    </p>
+                                    <p class="small text-light">
+                                        $$P(y=k|\mathbf{x}) = \frac{e^{\mathbf{w}_k^T \mathbf{x}}}{\sum_{j=1}^K e^{\mathbf{w}_j^T \mathbf{x}}}$$
+                                        Evaluated on the 3-class skip-risk category with Macro $F_1 = \mathbf{0.791}$ and Macro $\text{AUC} = \mathbf{0.948}$.
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- ==================== M3: TREE-BASED MODELS ==================== -->
+                    <div class="tab-pane fade" id="m3" role="tabpanel">
+                        <h4 class="text-success fw-bold mb-3"><i class="fa-solid fa-tree me-2"></i>Module 3: Supervised Learning — Tree-Based Models & Ensembles</h4>
+                        <p class="text-light">
+                            Tree models make orthogonal partition splits across feature space, capturing non-linear interactions without requiring normalization or monotonic feature transformations.
+                        </p>
+
+                        <div class="row g-4 my-2">
+                            <div class="col-lg-6">
+                                <div class="p-3 bg-dark border border-secondary rounded h-100">
+                                    <h5 class="text-success fw-bold">1. Decision Trees & Bias-Variance Curve</h5>
+                                    <p class="small text-secondary">
+                                        Greedy recursive binary splitting using MSE / Gini impurity.
+                                    </p>
+                                    <p class="small text-light">
+                                        By sweeping tree depth from $1$ to $15$, we empirically illustrate the <strong>Bias-Variance Trade-off</strong>:
+                                    </p>
+                                    <ul class="small text-light ps-3 mb-2">
+                                        <li><strong>Depth 1-4 (High Bias / Underfitting):</strong> Inability to capture true non-linear relationships; both train and test error are high.</li>
+                                        <li><strong>Depth 5-7 (Optimal Trade-off):</strong> Minimum validation error and peak generalization.</li>
+                                        <li><strong>Depth 8-15 (High Variance / Overfitting):</strong> Training error drops to near-zero while test MSE increases as the tree memorizes sample noise.</li>
+                                    </ul>
+                                </div>
+                            </div>
+                            <div class="col-lg-6">
+                                <div class="p-3 bg-dark border border-secondary rounded h-100">
+                                    <h5 class="text-success fw-bold">2. Random Forests: Bagging & Variance Reduction</h5>
+                                    <p class="small text-secondary">
+                                        Reduces variance of deep decision trees via Bootstrap Aggregation + Random Feature Subsampling.
+                                    </p>
+                                    <p class="small text-light">
+                                        For $B$ decorrelated trees each with variance $\sigma^2$ and pairwise correlation $\rho$, the ensemble variance is:
+                                        $$\text{Var}(\bar{T}) = \rho \sigma^2 + \frac{1-\rho}{B} \sigma^2$$
+                                        As $B$ grows, variance drops significantly without increasing bias.
+                                    </p>
+                                </div>
+                            </div>
+                            <div class="col-lg-6">
+                                <div class="p-3 bg-dark border border-secondary rounded h-100">
+                                    <h5 class="text-success fw-bold">3. Boosting: Gradient Boosting, XGBoost, LightGBM</h5>
+                                    <p class="small text-secondary">
+                                        Sequential functional gradient descent fitting residuals of previous iterations.
+                                    </p>
+                                    <ul class="small text-light ps-3 mb-0">
+                                        <li><strong>Gradient Boosting:</strong> Fits new shallow trees to negative gradient of loss function.</li>
+                                        <li><strong>XGBoost:</strong> Employs 2nd order Taylor expansion of loss + explicit tree complexity regularization.</li>
+                                        <li><strong>LightGBM:</strong> Uses histogram-based feature bucketing and leaf-wise (best-first) tree growth for ultra-fast training on large tabular datasets.</li>
+                                    </ul>
+                                </div>
+                            </div>
+                            <div class="col-lg-6">
+                                <div class="p-3 bg-dark border border-secondary rounded h-100">
+                                    <h5 class="text-success fw-bold">4. Feature Importance & Tabular Dominance</h5>
+                                    <p class="small text-secondary">
+                                        Mean Decrease in Impurity (MDI / Gini Importance).
+                                    </p>
+                                    <p class="small text-light">
+                                        Extracting feature importances shows that <code>danceability</code>, <code>energy</code>, and <code>acousticness</code> govern skip behavior, whereas track genre and <code>loudness</code> dominate popularity. On structured tabular data, tree ensembles routinely outperform neural networks due to their invariant scaling and robust handling of mixed discrete/continuous spaces.
+                                    </p>
+                                    <a href="{{ url_for('experiments') }}" class="btn btn-sm btn-outline-success">View Feature Importances</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

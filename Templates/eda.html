@@ -1,0 +1,100 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-12">
+        <h2 class="text-success fw-bold"><i class="fa-solid fa-chart-column me-2"></i>Exploratory Data Analysis (EDA)</h2>
+        <p class="text-secondary">Explore the statistical distributions, correlations, and feature relationships from the Spotify Tracks dataset.</p>
+    </div>
+</div>
+
+<div class="row">
+    <!-- Left Column: Audio Features Correlation and Scatter Plot -->
+    <div class="col-lg-7 mb-4">
+        <!-- Correlation Heatmap -->
+        <div class="card bg-black border-secondary shadow mb-4">
+            <div class="card-header bg-dark border-secondary">
+                <h5 class="card-title mb-0 text-success fw-semibold"><i class="fa-solid fa-square-poll-horizontal me-2"></i>Audio Features Correlation Heatmap</h5>
+            </div>
+            <div class="card-body text-center">
+                <img src="{{ url_for('static', filename='images/correlation_matrix.png') }}" class="img-fluid rounded border border-secondary bg-dark mb-3" alt="Correlation Matrix Heatmap" style="max-height: 480px;">
+                <div class="text-start small text-secondary px-2">
+                    <p class="mb-1"><strong>Key Insights:</strong></p>
+                    <ul>
+                        <li><strong>Energy & Loudness</strong> have a strong positive correlation ($r \approx 0.76$), reflecting that louder tracks are perceived as more energetic.</li>
+                        <li><strong>Acousticness & Energy</strong> exhibit a strong negative correlation ($r \approx -0.73$), as acoustic songs generally possess lower electrical amplification and energy.</li>
+                        <li><strong>Popularity</strong> shows weak linear correlations with individual features, indicating that track popularity is a complex, non-linear function of combined features, artist branding, and genres rather than a single audio metric.</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- Danceability vs Energy vs Skip -->
+        <div class="card bg-black border-secondary shadow">
+            <div class="card-header bg-dark border-secondary">
+                <h5 class="card-title mb-0 text-success fw-semibold"><i class="fa-solid fa-circle-nodes me-2"></i>Danceability vs Energy vs Skip Probability</h5>
+            </div>
+            <div class="card-body text-center">
+                <img src="{{ url_for('static', filename='images/dance_energy_skip.png') }}" class="img-fluid rounded border border-secondary bg-dark mb-3" alt="Danceability vs Energy Scatter" style="max-height: 400px;">
+                <div class="text-start small text-secondary px-2">
+                    <p class="mb-1"><strong>Key Insights:</strong></p>
+                    <p class="mb-0">
+                        Tracks with low danceability and low energy (bottom-left quadrant) are heavily colored in yellow/green, showing a high probability of being skipped. In contrast, tracks with high danceability and energy (top-right quadrant) are colored purple, showing a much lower skip probability. This confirms the validity of our synthetic skip proxy: tracks that lack rhythm and energy are prone to active skipping behavior.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Right Column: Popularity and Skip Distributions -->
+    <div class="col-lg-5 mb-4">
+        <!-- Popularity Dist -->
+        <div class="card bg-black border-secondary shadow mb-4">
+            <div class="card-header bg-dark border-secondary">
+                <h5 class="card-title mb-0 text-success fw-semibold"><i class="fa-solid fa-chart-line me-2"></i>Popularity Distribution</h5>
+            </div>
+            <div class="card-body text-center">
+                <img src="{{ url_for('static', filename='images/popularity_dist.png') }}" class="img-fluid rounded border border-secondary bg-dark mb-3" alt="Popularity Distribution" style="max-height: 250px;">
+                <div class="text-start small text-secondary px-2">
+                    <p class="mb-0">
+                        The popularity distribution exhibits a heavily right-skewed pattern with a massive spike at popularity = $0$. This indicates that a large fraction of tracks in the dataset have zero popularity (e.g. local uploads, extremely niche contents). For regression models, this zero-inflation is a major challenge and contributes to the relatively lower $R^2$ scores across all models.
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Skip Prob Dist -->
+        <div class="card bg-black border-secondary shadow mb-4">
+            <div class="card-header bg-dark border-secondary">
+                <h5 class="card-title mb-0 text-success fw-semibold"><i class="fa-solid fa-calculator me-2"></i>Engineered Skip Probability Proxy</h5>
+            </div>
+            <div class="card-body text-center">
+                <img src="{{ url_for('static', filename='images/skip_prob_dist.png') }}" class="img-fluid rounded border border-secondary bg-dark mb-3" alt="Skip Probability Distribution" style="max-height: 250px;">
+                <div class="text-start small text-secondary px-2">
+                    <p class="mb-0">
+                        The engineered skip probability score is centered around $0.35$. Applying thresholds divides tracks into risk categories:
+                        <span class="badge bg-success">Low Risk (< 0.35)</span>,
+                        <span class="badge bg-warning text-dark">(0.35 - 0.60) Medium Risk</span>, and
+                        <span class="badge bg-danger">High Risk (>= 0.60)</span>.
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Risk Category Distribution -->
+        <div class="card bg-black border-secondary shadow">
+            <div class="card-header bg-dark border-secondary">
+                <h5 class="card-title mb-0 text-success fw-semibold"><i class="fa-solid fa-chart-bar me-2"></i>Skip-Risk Category Distribution</h5>
+            </div>
+            <div class="card-body text-center">
+                <img src="{{ url_for('static', filename='images/skip_risk_dist.png') }}" class="img-fluid rounded border border-secondary bg-dark mb-3" alt="Skip Risk Category Distribution" style="max-height: 250px;">
+                <div class="text-start small text-secondary px-2">
+                    <p class="mb-0">
+                        Approximately 57.1% of tracks are classified as Low Skip Risk, 37.8% as Medium Skip Risk, and 5.1% as High Skip Risk. This class distribution matches active playlist listening sessions where the majority of songs are kept, a subset is tolerated, and a small, highly incongruent portion is skipped immediately.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

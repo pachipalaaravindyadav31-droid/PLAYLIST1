@@ -1,0 +1,4 @@
+timestamp,duration_ms,danceability,energy,key,loudness,mode,speechiness,acousticness,instrumentalness,liveness,valence,tempo,time_signature,explicit,track_genre,regression_model,classification_model,predicted_popularity,predicted_skip_probability,skip_risk_category,model_version
+2026-08-28T22:20:28.432250,230000,0.67,0.46,1,-6.7,0,0.14,0.03,0,0.36,0.71,88,4,False,acoustic,best_model,best_model,42.434165623538966,0.008251395459477149,Low,1.0.0
+2026-08-28T22:20:28.688502,230000,0.67,0.46,1,-6.7,0,0.14,0.03,0,0.36,0.71,88,4,False,acoustic,best_model,best_model,42.434165623538966,0.008251395459477149,Low,1.0.0
+2026-09-20T19:10:46.457108,230000,0.67,0.46,1,-6.7,0,0.14,0.03,0,0.36,0.71,88,4,False,acoustic,best_model,best_model,42.434165623538966,0.008251395459477149,Low,1.0.0
