@@ -729,3 +729,11 @@ Name: proportion, dtype: float64
 2026-10-06 14:13:22,655 - __main__ - INFO - Loaded fitted StandardScaler and OneHotEncoder successfully.
 2026-10-06 14:13:22,712 - __main__ - INFO - Loaded baseline feature means: {'danceability': 0.56262192, 'energy': 0.64602557308, 'acousticness': 0.31280981499, 'speechiness': 0.08449058}
 2026-10-06 14:13:22,723 - __main__ - INFO - Starting PlaylistPulse Flask server on http://127.0.0.1:5000...
+2026-10-06 14:25:34,483 - __main__ - INFO - Loaded metrics summary successfully.
+2026-10-06 14:25:34,485 - __main__ - INFO - Loaded fitted StandardScaler and OneHotEncoder successfully.
+2026-10-06 14:25:34,514 - __main__ - INFO - Loaded baseline feature means: {'danceability': 0.56262192, 'energy': 0.64602557308, 'acousticness': 0.31280981499, 'speechiness': 0.08449058}
+2026-10-06 14:25:34,518 - __main__ - INFO - Starting PlaylistPulse Flask server on http://127.0.0.1:5000...
+2026-10-06 14:25:38,227 - __main__ - INFO - Loaded metrics summary successfully.
+2026-10-06 14:25:38,233 - __main__ - INFO - Loaded fitted StandardScaler and OneHotEncoder successfully.
+2026-10-06 14:25:38,347 - __main__ - INFO - Loaded baseline feature means: {'danceability': 0.56262192, 'energy': 0.64602557308, 'acousticness': 0.31280981499, 'speechiness': 0.08449058}
+2026-10-06 14:25:38,376 - __main__ - INFO - Starting PlaylistPulse Flask server on http://127.0.0.1:5000...
