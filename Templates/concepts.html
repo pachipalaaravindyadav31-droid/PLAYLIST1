@@ -4,11 +4,11 @@
 <div class="row mb-4">
     <div class="col-12">
         <h2 class="text-success fw-bold"><i class="fa-solid fa-graduation-cap me-2"></i>ML Concepts & System Architecture</h2>
-        <p class="text-secondary">Comprehensive academic curriculum mapping: How Modules M1, M2, and M3 are mathematically grounded and implemented in code.</p>
+        <p class="text-secondary">Comprehensive academic curriculum mapping: Complete theoretical foundations, mathematical formulas, algorithmic properties, and codebase mappings across Modules M1, M2, M3, M4, and M5.</p>
     </div>
 </div>
 
-<!-- Navigation Pills for M1, M2, M3 -->
+<!-- Navigation Pills for M1, M2, M3, M4, M5 -->
 <div class="row mb-4">
     <div class="col-12">
         <div class="card bg-black border-secondary shadow">
@@ -24,9 +24,19 @@
                             <i class="fa-solid fa-chart-line me-1"></i> M2: Linear Models at Depth
                         </button>
                     </li>
-                    <li class="nav-item" role="presentation">
+                    <li class="nav-item me-2" role="presentation">
                         <button class="nav-link bg-dark text-success border border-success fw-bold" id="m3-tab" data-bs-toggle="pill" data-bs-target="#m3" type="button" role="tab">
                             <i class="fa-solid fa-tree me-1"></i> M3: Tree-Based Ensembles
+                        </button>
+                    </li>
+                    <li class="nav-item me-2" role="presentation">
+                        <button class="nav-link bg-dark text-success border border-success fw-bold" id="m4-tab" data-bs-toggle="pill" data-bs-target="#m4" type="button" role="tab">
+                            <i class="fa-solid fa-diagram-project me-1"></i> M4: Unsupervised Learning
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link bg-dark text-success border border-success fw-bold" id="m5-tab" data-bs-toggle="pill" data-bs-target="#m5" type="button" role="tab">
+                            <i class="fa-solid fa-scale-balanced me-1"></i> M5: Evaluation, Selection & Calibration
                         </button>
                     </li>
                 </ul>
@@ -73,22 +83,32 @@
                                                 <td>Fits <code>StandardScaler</code> and <code>OneHotEncoder</code>; saves to <code>models/*.joblib</code>.</td>
                                             </tr>
                                             <tr>
-                                                <td class="text-success fw-semibold">4. Model Training & Tuning</td>
+                                                <td class="text-success fw-semibold">4. Supervised Training & Tuning</td>
                                                 <td><code>src/train_regression.py</code> & <code>src/train_classification.py</code></td>
-                                                <td>Trains 16 models across linear, regularized, and ensemble algorithms with hyperparameter sweeps.</td>
+                                                <td>Trains linear, regularized, and ensemble algorithms (Ridge, Lasso, Random Forest, GBDT, LightGBM).</td>
                                             </tr>
                                             <tr>
-                                                <td class="text-success fw-semibold">5. Model Packaging (Registry)</td>
+                                                <td class="text-success fw-semibold">5. Unsupervised Discovery & Embeddings</td>
+                                                <td><code>src/train_unsupervised.py</code></td>
+                                                <td>K-Means (Lloyd/K-Means++), PCA scree, DBSCAN density grouping, dendrograms, t-SNE, Isolation Forest.</td>
+                                            </tr>
+                                            <tr>
+                                                <td class="text-success fw-semibold">6. Evaluation, Calibration & Testing</td>
+                                                <td><code>src/evaluation_calibration.py</code></td>
+                                                <td>Platt scaling, Isotonic regression, Reliability diagrams, ROC/PR curves, McNemar's test, residual diagnostics.</td>
+                                            </tr>
+                                            <tr>
+                                                <td class="text-success fw-semibold">7. Model Packaging (Registry)</td>
                                                 <td><code>models/</code> & <code>models/metrics_summary.json</code></td>
                                                 <td>Stores serialised weights, preprocessors, and benchmark metrics for zero-delay startup.</td>
                                             </tr>
                                             <tr>
-                                                <td class="text-success fw-semibold">6. Serving REST API & UI</td>
+                                                <td class="text-success fw-semibold">8. Serving REST API & UI</td>
                                                 <td><code>app.py</code> & <code>templates/</code></td>
                                                 <td>Flask web service exposing <code>POST /api/predict</code> with interactive dashboard.</td>
                                             </tr>
                                             <tr>
-                                                <td class="text-success fw-semibold">7. Telemetry & Monitoring</td>
+                                                <td class="text-success fw-semibold">9. Telemetry & Monitoring</td>
                                                 <td><code>logs/predictions.csv</code> & <code>app.py</code></td>
                                                 <td>Logs every inference payload and runs live Data Drift sliding window calculations.</td>
                                             </tr>
@@ -145,7 +165,7 @@
                                         Transforming inputs using standard score: $z = \frac{x - \mu}{\sigma}$.
                                     </p>
                                     <p class="small text-light">
-                                        Without scaling, features with large numeric scales (such as <code>duration_ms</code> in hundreds of thousands) overpower the loss gradient, causing linear regression $R^2$ to collapse to <strong>0.036</strong>. With <code>StandardScaler</code>, all features have unit variance, boosting test $R^2$ to <strong>0.264</strong> and making weights directly interpretable.
+                                        Without scaling, features with large numeric scales (such as <code>duration_ms</code> in hundreds of thousands) overpower the loss gradient, causing linear regression $R^2$ to collapse to <strong>0.106</strong>. With <code>StandardScaler</code>, all features have unit variance, boosting test $R^2$ to <strong>0.255</strong> and making weights directly interpretable.
                                     </p>
                                     <a href="{{ url_for('experiments') }}" class="btn btn-sm btn-outline-success">View Scaling Experiment</a>
                                 </div>
@@ -171,7 +191,7 @@
                                         Estimates skip probability via sigmoid activation: $P(y=1|\mathbf{x}) = \sigma(\mathbf{w}^T \mathbf{x}) = \frac{1}{1 + e^{-\mathbf{w}^T \mathbf{x}}}$.
                                     </p>
                                     <p class="small text-light">
-                                        Trained using Binary Cross-Entropy (Log Loss). Achieves <strong>92.7% Test Accuracy</strong> and <strong>0.973 ROC-AUC</strong> for binary skip behavior on Spotify audio tracks.
+                                        Trained using Binary Cross-Entropy (Log Loss). Achieves <strong>93.5% Test Accuracy</strong> and <strong>0.977 ROC-AUC</strong> for binary skip behavior on Spotify audio tracks.
                                     </p>
                                 </div>
                             </div>
@@ -183,7 +203,7 @@
                                     </p>
                                     <p class="small text-light">
                                         $$P(y=k|\mathbf{x}) = \frac{e^{\mathbf{w}_k^T \mathbf{x}}}{\sum_{j=1}^K e^{\mathbf{w}_j^T \mathbf{x}}}$$
-                                        Evaluated on the 3-class skip-risk category with Macro $F_1 = \mathbf{0.791}$ and Macro $\text{AUC} = \mathbf{0.948}$.
+                                        Evaluated on the 3-class skip-risk category with Macro $F_1 = \mathbf{0.781}$ and Macro $\text{AUC} = \mathbf{0.943}$.
                                     </p>
                                 </div>
                             </div>
@@ -250,6 +270,190 @@
                                         Extracting feature importances shows that <code>danceability</code>, <code>energy</code>, and <code>acousticness</code> govern skip behavior, whereas track genre and <code>loudness</code> dominate popularity. On structured tabular data, tree ensembles routinely outperform neural networks due to their invariant scaling and robust handling of mixed discrete/continuous spaces.
                                     </p>
                                     <a href="{{ url_for('experiments') }}" class="btn btn-sm btn-outline-success">View Feature Importances</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- ==================== M4: UNSUPERVISED LEARNING ==================== -->
+                    <div class="tab-pane fade" id="m4" role="tabpanel">
+                        <h4 class="text-success fw-bold mb-3"><i class="fa-solid fa-diagram-project me-2"></i>Module 4: Unsupervised Learning & Dimensionality Reduction</h4>
+                        <p class="text-light">
+                            Unsupervised algorithms uncover latent acoustic geometry, discover natural listener groupings, construct compact low-dimensional representations, and flag anomalous tracks without supervision labels.
+                        </p>
+
+                        <div class="row g-4 my-2">
+                            <div class="col-lg-6">
+                                <div class="p-3 bg-dark border border-secondary rounded h-100">
+                                    <h5 class="text-success fw-bold">1. K-Means & Lloyd's Algorithm</h5>
+                                    <p class="small text-secondary">
+                                        Minimizing Within-Cluster Sum of Squares (Inertia / WCSS):
+                                        $$J = \sum_{k=1}^K \sum_{x_i \in C_k} \|x_i - \mu_k\|_2^2$$
+                                    </p>
+                                    <ul class="small text-light ps-3 mb-2">
+                                        <li><strong>Lloyd Algorithm:</strong> Alternates between Voronoi assignment \(z_i = \arg\min_k \|x_i - \mu_k\|^2\) and centroid update \(\mu_k = \frac{1}{|C_k|}\sum x_i\).</li>
+                                        <li><strong>K-Means++:</strong> Samples initial seeds proportional to squared distance \(D(x)^2\) from nearest existing center, guaranteeing \(O(\log K)\) competitive bound over random initialization.</li>
+                                        <li><strong>Mini-Batch K-Means:</strong> Stochastic gradient updates with small batches for streaming music catalogs.</li>
+                                    </ul>
+                                </div>
+                            </div>
+                            <div class="col-lg-6">
+                                <div class="p-3 bg-dark border border-secondary rounded h-100">
+                                    <h5 class="text-success fw-bold">2. Choosing K: Elbow vs Silhouette Coefficient</h5>
+                                    <p class="small text-secondary">
+                                        Evaluating cluster cohesion vs cluster separation:
+                                    </p>
+                                    <p class="small text-light">
+                                        The silhouette coefficient for sample \(i\) is:
+                                        $$s(i) = \frac{b(i) - a(i)}{\max(a(i), b(i))}, \quad s(i) \in [-1, 1]$$
+                                        where \(a(i)\) is intra-cluster distance and \(b(i)\) is nearest-cluster distance. In PlaylistPulse, peak silhouette score occurs at \(K=2\) (Acoustic/Ambient vs Danceable/Upbeat).
+                                    </p>
+                                    <a href="{{ url_for('graphs') }}" class="btn btn-sm btn-outline-success">View Elbow & Silhouette Curves</a>
+                                </div>
+                            </div>
+                            <div class="col-lg-6">
+                                <div class="p-3 bg-dark border border-secondary rounded h-100">
+                                    <h5 class="text-success fw-bold">3. Density-Based Clustering: DBSCAN</h5>
+                                    <p class="small text-secondary">
+                                        Density-Based Spatial Clustering of Applications with Noise:
+                                    </p>
+                                    <ul class="small text-light ps-3 mb-2">
+                                        <li><strong>Core Points:</strong> \(\ge minPts\) samples within \(\varepsilon\)-neighborhood \(N_\varepsilon(p)\).</li>
+                                        <li><strong>Border Points:</strong> Reachable from a core point but \(&lt; minPts\) neighbors.</li>
+                                        <li><strong>Noise / Outliers:</strong> Points not density-reachable from any core point (\(\text{label} = -1\)).</li>
+                                        <li><strong>Advantage:</strong> Discovers non-convex musical geometries without pre-specifying cluster count \(K\).</li>
+                                    </ul>
+                                </div>
+                            </div>
+                            <div class="col-lg-6">
+                                <div class="p-3 bg-dark border border-secondary rounded h-100">
+                                    <h5 class="text-success fw-bold">4. Hierarchical Agglomerative Clustering</h5>
+                                    <p class="small text-secondary">
+                                        Bottom-up iterative cluster fusion visualized via Dendrograms:
+                                    </p>
+                                    <ul class="small text-light ps-3 mb-2">
+                                        <li><strong>Ward Linkage:</strong> Minimizes total within-cluster variance increase \(\Delta \text{ESS}\).</li>
+                                        <li><strong>Complete Linkage:</strong> \(\max \{d(u,v) : u \in A, v \in B\}\) (compact spheres).</li>
+                                        <li><strong>Single Linkage:</strong> \(\min \{d(u,v)\}\) (susceptible to chaining).</li>
+                                        <li><strong>Average Linkage:</strong> \(\frac{1}{|A||B|} \sum d(u,v)\) (balanced compromises).</li>
+                                    </ul>
+                                </div>
+                            </div>
+                            <div class="col-lg-6">
+                                <div class="p-3 bg-dark border border-secondary rounded h-100">
+                                    <h5 class="text-success fw-bold">5. PCA & Standardization Requirement</h5>
+                                    <p class="small text-secondary">
+                                        Orthogonal linear projection maximizing feature variance:
+                                    </p>
+                                    <p class="small text-light">
+                                        $$\Sigma = \frac{1}{n} \mathbf{X}^T \mathbf{X}, \quad \Sigma \mathbf{v}_k = \lambda_k \mathbf{v}_k$$
+                                        <strong>Critical Pitfall:</strong> Applying PCA without standardizing numerical features causes principal axis 1 to align purely with large-magnitude features (e.g. <code>duration_ms</code>), destroying meaningful acoustic variance.
+                                    </p>
+                                </div>
+                            </div>
+                            <div class="col-lg-6">
+                                <div class="p-3 bg-dark border border-secondary rounded h-100">
+                                    <h5 class="text-success fw-bold">6. Manifold Visualization & Anomaly Detection</h5>
+                                    <p class="small text-secondary">
+                                        Non-linear embedding & tree isolation:
+                                    </p>
+                                    <ul class="small text-light ps-3 mb-2">
+                                        <li><strong>t-SNE & UMAP:</strong> Preserves local manifold topology in 2D space. <em>Warning:</em> Inter-cluster distances and cluster densities in t-SNE space are not Euclidean.</li>
+                                        <li><strong>Isolation Forest:</strong> Outliers are isolated near root in random recursive splits (\(h(x) \ll E[h]\)), isolating corrupt or extreme tracks.</li>
+                                        <li><strong>Cluster-as-Features Pipeline:</strong> Cluster membership probabilities are appended as engineered signals for downstream skip prediction.</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- ==================== M5: EVALUATION, SELECTION & CALIBRATION ==================== -->
+                    <div class="tab-pane fade" id="m5" role="tabpanel">
+                        <h4 class="text-success fw-bold mb-3"><i class="fa-solid fa-scale-balanced me-2"></i>Module 5: Model Evaluation, Selection, and Calibration</h4>
+                        <p class="text-light">
+                            Production ML systems require disciplined validation splits, calibrated probability outputs for risk-sensitive business decisions, and rigorous statistical significance tests.
+                        </p>
+
+                        <div class="row g-4 my-2">
+                            <div class="col-lg-6">
+                                <div class="p-3 bg-dark border border-secondary rounded h-100">
+                                    <h5 class="text-success fw-bold">1. Train / Validation / Test Discipline</h5>
+                                    <p class="small text-secondary">
+                                        Strict three-way split to eliminate data leakage and selection bias:
+                                    </p>
+                                    <ul class="small text-light ps-3 mb-2">
+                                        <li><strong>Training Set:</strong> Used exclusively to optimize model parameters \(\mathbf{w}\).</li>
+                                        <li><strong>Validation Set:</strong> Used for hyperparameter tuning (\(\alpha\), tree depth, learning rate) and early stopping.</li>
+                                        <li><strong>Test Set (Held-Out Vault):</strong> Evaluated only once at the end of modeling decisions to report unbiased generalization error.</li>
+                                        <li><strong>Nested CV:</strong> Outer loop evaluates performance; inner loop selects hyperparameters.</li>
+                                    </ul>
+                                </div>
+                            </div>
+                            <div class="col-lg-6">
+                                <div class="p-3 bg-dark border border-secondary rounded h-100">
+                                    <h5 class="text-success fw-bold">2. Classification: When Accuracy Lies (Imbalance)</h5>
+                                    <p class="small text-secondary">
+                                        Why high accuracy can conceal an ineffective predictor:
+                                    </p>
+                                    <p class="small text-light">
+                                        If 95% of tracks are not skipped, a trivial "never skip" baseline achieves 95% accuracy with 0 Recall. We utilize:
+                                        $$\text{Precision} = \frac{TP}{TP+FP}, \quad \text{Recall} = \frac{TP}{TP+FN}, \quad F_1 = 2 \frac{P \cdot R}{P + R}$$
+                                        <strong>ROC-AUC vs PR-AUC:</strong> PR-AUC focuses directly on positive minority class prediction, avoiding ROC optimism on heavy class imbalances.
+                                    </p>
+                                </div>
+                            </div>
+                            <div class="col-lg-6">
+                                <div class="p-3 bg-dark border border-secondary rounded h-100">
+                                    <h5 class="text-success fw-bold">3. Regression Metrics & Outlier Sensitivity</h5>
+                                    <p class="small text-secondary">
+                                        Choosing loss metrics based on downstream cost curves:
+                                    </p>
+                                    <ul class="small text-light ps-3 mb-2">
+                                        <li><strong>RMSE:</strong> \(\sqrt{\frac{1}{N}\sum(y_i - \hat{y}_i)^2}\) — heavily penalizes large outlier errors quadratically.</li>
+                                        <li><strong>MAE:</strong> \(\frac{1}{N}\sum |y_i - \hat{y}_i|\) — robust linear penalty representing median central tendency.</li>
+                                        <li><strong>MAPE:</strong> Percentage scale; sensitive to near-zero targets.</li>
+                                        <li><strong>\(R^2\) Score:</strong> Fraction of target variance explained by model over mean baseline.</li>
+                                    </ul>
+                                </div>
+                            </div>
+                            <div class="col-lg-6">
+                                <div class="p-3 bg-dark border border-secondary rounded h-100">
+                                    <h5 class="text-success fw-bold">4. Probability Calibration: Platt vs Isotonic</h5>
+                                    <p class="small text-secondary">
+                                        Ensuring predicted \(\hat{p} = 0.70\) corresponds to true empirical 70% event rate:
+                                    </p>
+                                    <ul class="small text-light ps-3 mb-2">
+                                        <li><strong>Platt Scaling:</strong> Fits univariate logistic regression \(P(y=1|f) = \frac{1}{1 + e^{A f + B}}\) on model logits. Parametric and monotonic.</li>
+                                        <li><strong>Isotonic Regression:</strong> Non-parametric step-wise monotonic regression minimizing squared errors. Ideal for large datasets.</li>
+                                        <li><strong>Brier Score:</strong> \(\text{BS} = \frac{1}{N} \sum (\hat{p}_i - y_i)^2\) — quantifies mean squared calibration error.</li>
+                                    </ul>
+                                </div>
+                            </div>
+                            <div class="col-lg-6">
+                                <div class="p-3 bg-dark border border-secondary rounded h-100">
+                                    <h5 class="text-success fw-bold">5. Learning Curves & Bias/Variance Diagnosis</h5>
+                                    <p class="small text-secondary">
+                                        Plotting Train vs Cross-Validation scores as sample size \(N\) grows:
+                                    </p>
+                                    <ul class="small text-light ps-3 mb-2">
+                                        <li><strong>High Bias (Underfitting):</strong> Both training and validation scores plateau at low metric value; adding data will not help.</li>
+                                        <li><strong>High Variance (Overfitting):</strong> Large gap between training score (near 1.0) and validation score; more training data or stronger regularization will improve generalization.</li>
+                                        <li><strong>Data Saturation:</strong> Validation curve flattens, confirming sample size sufficiency.</li>
+                                    </ul>
+                                </div>
+                            </div>
+                            <div class="col-lg-6">
+                                <div class="p-3 bg-dark border border-secondary rounded h-100">
+                                    <h5 class="text-success fw-bold">6. Statistical Significance: McNemar's Test</h5>
+                                    <p class="small text-secondary">
+                                        Determining whether Model A genuinely outperforms Model B or if differences are due to random sampling:
+                                    </p>
+                                    <p class="small text-light">
+                                        Constructs a 2x2 contingency table of paired predictions:
+                                        $$\chi^2 = \frac{(|b - c| - 1)^2}{b + c}, \quad \text{df} = 1$$
+                                        where \(b\) is tracks where Model A was correct and B was wrong, and \(c\) is tracks where Model B was correct and A was wrong. If \(p &lt; 0.05\), performance difference is statistically significant.
+                                    </p>
+                                    <a href="{{ url_for('graphs') }}" class="btn btn-sm btn-outline-success">View McNemar Test Results</a>
                                 </div>
                             </div>
                         </div>

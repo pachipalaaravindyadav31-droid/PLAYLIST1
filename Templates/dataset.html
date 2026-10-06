@@ -1,0 +1,477 @@
+{% extends "base.html" %}
+
+{% block extra_css %}
+<style>
+    .dropzone-box {
+        border: 2px dashed #1DB954;
+        background-color: #12151b;
+        border-radius: 12px;
+        padding: 30px;
+        text-align: center;
+        transition: all 0.3s ease;
+        cursor: pointer;
+    }
+    .dropzone-box:hover, .dropzone-box.dragover {
+        background-color: #1a222d;
+        border-color: #1ed760;
+        transform: translateY(-2px);
+    }
+    .table-preview-scroll {
+        max-height: 420px;
+        overflow-x: auto;
+        overflow-y: auto;
+    }
+    .spinner-overlay {
+        position: fixed;
+        top: 0; left: 0; width: 100vw; height: 100vh;
+        background: rgba(0,0,0,0.85);
+        z-index: 9999;
+        display: none;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Loading Overlay during ML Retraining -->
+<div class="spinner-overlay" id="loadingOverlay">
+    <div class="spinner-border text-success" style="width: 4rem; height: 4rem;" role="status"></div>
+    <h4 class="text-white mt-4 fw-bold" id="overlayTitle">Executing End-to-End ML Pipeline...</h4>
+    <p class="text-secondary small text-center" id="overlaySub">Running Data Cleaning, Regression, Classification, Unsupervised Clustering (M4), and Calibration (M5).<br>This may take 15–30 seconds.</p>
+</div>
+
+<div class="row mb-4">
+    <div class="col-12">
+        <h2 class="text-success fw-bold"><i class="fa-solid fa-database me-2"></i>Dataset Management & Online Pipeline Studio</h2>
+        <p class="text-secondary">Upload new Spotify track datasets, validate audio schemas, inspect statistical distributions, and trigger the automated end-to-end retraining pipeline across Modules M1 — M5.</p>
+    </div>
+</div>
+
+<!-- Alert banner for notifications -->
+<div id="alertContainer"></div>
+
+<!-- Top Row: Active Dataset Status & Retrain Trigger -->
+<div class="row g-4 mb-4">
+    <!-- Active Dataset Summary Card -->
+    <div class="col-lg-7">
+        <div class="card bg-black border-secondary shadow h-100">
+            <div class="card-header bg-dark border-secondary d-flex justify-content-between align-items-center">
+                <span class="text-white fw-bold"><i class="fa-solid fa-server me-2 text-success"></i>Active Working Dataset</span>
+                <span class="badge bg-success" id="activeStatusBadge">Active & Connected</span>
+            </div>
+            <div class="card-body">
+                <div class="row g-3 mb-3">
+                    <div class="col-sm-6">
+                        <div class="p-3 bg-dark border border-secondary rounded">
+                            <span class="text-secondary small d-block">File Name</span>
+                            <span class="fs-6 fw-bold text-white text-truncate d-block" id="activeFileName">{{ summary.filename }}</span>
+                        </div>
+                    </div>
+                    <div class="col-sm-3">
+                        <div class="p-3 bg-dark border border-secondary rounded">
+                            <span class="text-secondary small d-block">Total Tracks</span>
+                            <span class="fs-5 fw-bold text-success" id="activeRowCount">{{ "{:,}".format(summary.row_count) }}</span>
+                        </div>
+                    </div>
+                    <div class="col-sm-3">
+                        <div class="p-3 bg-dark border border-secondary rounded">
+                            <span class="text-secondary small d-block">Feature Count</span>
+                            <span class="fs-5 fw-bold text-info" id="activeColCount">{{ summary.col_count }}</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="d-flex flex-wrap align-items-center justify-content-between p-3 bg-dark border border-secondary rounded">
+                    <div>
+                        <strong class="text-light d-block small">Schema Compatibility:</strong>
+                        {% if summary.is_valid %}
+                            <span class="text-success small"><i class="fa-solid fa-circle-check me-1"></i>All 9 Required Audio Columns Validated</span>
+                        {% else %}
+                            <span class="text-warning small"><i class="fa-solid fa-triangle-exclamation me-1"></i>Missing: {{ summary.missing_required|join(', ') }} (Defaults will be imputed)</span>
+                        {% endif %}
+                    </div>
+                    <div class="mt-2 mt-md-0">
+                        <span class="text-secondary small me-2">File Size: <strong>{{ summary.file_size_kb }} KB</strong></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Retrain Trigger Card -->
+    <div class="col-lg-5">
+        <div class="card bg-black border-secondary shadow h-100">
+            <div class="card-header bg-dark border-secondary">
+                <span class="text-white fw-bold"><i class="fa-solid fa-bolt me-2 text-warning"></i>Trigger Retraining (M1 — M5)</span>
+            </div>
+            <div class="card-body d-flex flex-column justify-content-between">
+                <p class="text-secondary small">
+                    Execute the full pipeline on the active dataset: Preprocessing $\to$ Linear/Ridge/Lasso $\to$ Random Forest/LightGBM $\to$ K-Means/PCA/DBSCAN (M4) $\to$ Platt Calibration (M5).
+                </p>
+                <div>
+                    <label class="form-label text-light small fw-bold">Training Sample Size</label>
+                    <select class="form-select bg-dark text-light border-secondary mb-3" id="retrainSampleSize">
+                        <option value="5000">5,000 Tracks (Fast ~10s)</option>
+                        <option value="15000" selected>15,000 Tracks (Balanced ~20s)</option>
+                        <option value="30000">30,000 Tracks (Full High Precision ~35s)</option>
+                    </select>
+                    <button class="btn btn-success w-100 fw-bold py-2 shadow" id="btnRetrain" onclick="triggerRetrain()">
+                        <i class="fa-solid fa-arrows-rotate me-2"></i>Re-Train All Models & Re-Generate Plots
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Row 2: Upload Form & Available Datasets -->
+<div class="row g-4 mb-4">
+    <!-- Upload Dropzone -->
+    <div class="col-lg-6">
+        <div class="card bg-black border-secondary shadow h-100">
+            <div class="card-header bg-dark border-secondary">
+                <span class="text-white fw-bold"><i class="fa-solid fa-cloud-arrow-up me-2 text-success"></i>Upload New CSV Dataset</span>
+            </div>
+            <div class="card-body">
+                <form id="uploadForm" enctype="multipart/form-data">
+                    <div class="dropzone-box mb-3" id="dropzoneBox" onclick="document.getElementById('fileInput').click()">
+                        <i class="fa-solid fa-file-csv fs-1 text-success mb-2"></i>
+                        <h6 class="text-white mb-1">Click to select or drag & drop Spotify CSV file</h6>
+                        <p class="text-secondary small mb-2">Supports any standard Spotify audio feature track dataset (.csv)</p>
+                        <span class="badge bg-dark border border-secondary text-info" id="selectedFileName">No file chosen</span>
+                        <input type="file" id="fileInput" name="dataset_file" accept=".csv" class="d-none" onchange="handleFileSelected(event)">
+                    </div>
+
+                    <div class="form-check form-switch mb-3">
+                        <input class="form-check-input" type="checkbox" id="autoActivateCheck" checked>
+                        <label class="form-check-label text-light small" for="autoActivateCheck">
+                            Set as Active Working Dataset upon upload
+                        </label>
+                    </div>
+
+                    <div class="form-check form-switch mb-3">
+                        <input class="form-check-input" type="checkbox" id="autoTrainCheck">
+                        <label class="form-check-label text-light small" for="autoTrainCheck">
+                            Automatically run ML Pipeline (M1 — M5) after upload
+                        </label>
+                    </div>
+
+                    <button type="button" class="btn btn-primary w-100 fw-bold" id="btnUpload" onclick="uploadDataset()">
+                        <i class="fa-solid fa-upload me-2"></i>Upload and Validate Dataset
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Available Registered Datasets -->
+    <div class="col-lg-6">
+        <div class="card bg-black border-secondary shadow h-100">
+            <div class="card-header bg-dark border-secondary d-flex justify-content-between align-items-center">
+                <span class="text-white fw-bold"><i class="fa-solid fa-folder-open me-2 text-info"></i>Available Datasets</span>
+                <span class="badge bg-secondary">{{ datasets|length }} Files</span>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive" style="max-height: 280px; overflow-y: auto;">
+                    <table class="table table-dark table-hover mb-0 align-middle small">
+                        <thead>
+                            <tr class="text-secondary border-secondary">
+                                <th>Dataset Name</th>
+                                <th>Size</th>
+                                <th>Status</th>
+                                <th class="text-end">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="datasetListTable">
+                            {% for d in datasets %}
+                            <tr class="border-secondary {% if d.is_active %}table-active{% endif %}">
+                                <td>
+                                    <div class="fw-bold text-white text-truncate" style="max-width: 220px;" title="{{ d.name }}">{{ d.name }}</div>
+                                    <span class="text-secondary" style="font-size: 0.75rem;">{{ d.uploaded_at[:10] }}</span>
+                                </td>
+                                <td>{{ d.size_kb }} KB</td>
+                                <td>
+                                    {% if d.is_active %}
+                                        <span class="badge bg-success">Active</span>
+                                    {% else %}
+                                        <span class="badge bg-secondary">Stored</span>
+                                    {% endif %}
+                                </td>
+                                <td class="text-end">
+                                    {% if not d.is_active %}
+                                        <button class="btn btn-sm btn-outline-success" onclick="switchDataset('{{ d.path }}')">
+                                            <i class="fa-solid fa-check me-1"></i>Select
+                                        </button>
+                                    {% else %}
+                                        <button class="btn btn-sm btn-success disabled">
+                                            <i class="fa-solid fa-check-double me-1"></i>Active
+                                        </button>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Row 3: Dataset Schema Checklist & Audio Features Guide -->
+<div class="row g-4 mb-4">
+    <div class="col-12">
+        <div class="card bg-black border-secondary shadow">
+            <div class="card-header bg-dark border-secondary">
+                <span class="text-white fw-bold"><i class="fa-solid fa-list-check me-2 text-success"></i>Dataset Column Schema & Health Checklist</span>
+            </div>
+            <div class="card-body">
+                <p class="text-secondary small mb-3">
+                    PlaylistPulse requires standard Spotify audio characteristics. If any column is missing in your CSV, the system automatically applies safe statistical imputation defaults so training proceeds without error.
+                </p>
+                <div class="row g-2">
+                    {% for col_info in summary.column_details %}
+                    <div class="col-md-4 col-lg-3">
+                        <div class="p-2 bg-dark border border-secondary rounded d-flex justify-content-between align-items-center">
+                            <div>
+                                <span class="fw-bold text-white d-block small font-monospace">{{ col_info.name }}</span>
+                                <span class="text-secondary" style="font-size: 0.72rem;">{{ col_info.dtype }} &bull; {{ col_info.null_count }} missing</span>
+                            </div>
+                            <div>
+                                {% if col_info.category == 'Required Audio' %}
+                                    <span class="badge bg-success" style="font-size: 0.7rem;">Audio</span>
+                                {% elif col_info.category == 'Recommended' %}
+                                    <span class="badge bg-info text-dark" style="font-size: 0.7rem;">Target/Meta</span>
+                                {% else %}
+                                    <span class="badge bg-secondary" style="font-size: 0.7rem;">Text</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Row 4: Dataset Preview Table -->
+<div class="row g-4 mb-4">
+    <div class="col-12">
+        <div class="card bg-black border-secondary shadow">
+            <div class="card-header bg-dark border-secondary d-flex justify-content-between align-items-center">
+                <span class="text-white fw-bold"><i class="fa-solid fa-table me-2 text-primary"></i>Dataset Sample Preview (First 10 Tracks)</span>
+                <span class="text-secondary small">Showing {{ summary.preview_records|length }} of {{ summary.row_count }} records</span>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-preview-scroll">
+                    <table class="table table-dark table-hover table-striped mb-0 small text-nowrap">
+                        <thead>
+                            <tr class="text-success border-secondary">
+                                {% for col in summary.preview_columns %}
+                                <th>{{ col }}</th>
+                                {% endfor %}
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for row in summary.preview_records %}
+                            <tr class="border-secondary">
+                                {% for col in summary.preview_columns %}
+                                <td>{{ row[col] }}</td>
+                                {% endfor %}
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Row 5: Numerical Feature Summary Statistics -->
+<div class="row g-4 mb-4">
+    <div class="col-12">
+        <div class="card bg-black border-secondary shadow">
+            <div class="card-header bg-dark border-secondary">
+                <span class="text-white fw-bold"><i class="fa-solid fa-calculator me-2 text-warning"></i>Audio Feature Statistical Distribution</span>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-dark table-hover mb-0 small">
+                        <thead>
+                            <tr class="text-secondary border-secondary">
+                                <th>Feature</th>
+                                <th>Mean</th>
+                                <th>Std Dev (\(\sigma\))</th>
+                                <th>Median</th>
+                                <th>Min</th>
+                                <th>Max</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for feat, stat in summary.summary_stats.items() %}
+                            <tr class="border-secondary">
+                                <td class="text-white fw-bold font-monospace">{{ feat }}</td>
+                                <td class="text-info">{{ stat.mean }}</td>
+                                <td class="text-secondary">{{ stat.std }}</td>
+                                <td class="text-light">{{ stat.median }}</td>
+                                <td class="text-light">{{ stat.min }}</td>
+                                <td class="text-light">{{ stat.max }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    function handleFileSelected(event) {
+        const file = event.target.files[0];
+        if (file) {
+            document.getElementById('selectedFileName').innerText = `${file.name} (${(file.size / 1024).toFixed(1)} KB)`;
+        }
+    }
+
+    // Drag & Drop event handlers
+    const dropzone = document.getElementById('dropzoneBox');
+    ['dragenter', 'dragover'].forEach(eventName => {
+        dropzone.addEventListener(eventName, (e) => {
+            e.preventDefault();
+            dropzone.classList.add('dragover');
+        }, false);
+    });
+
+    ['dragleave', 'drop'].forEach(eventName => {
+        dropzone.addEventListener(eventName, (e) => {
+            e.preventDefault();
+            dropzone.classList.remove('dragover');
+        }, false);
+    });
+
+    dropzone.addEventListener('drop', (e) => {
+        const dt = e.dataTransfer;
+        const files = dt.files;
+        if (files.length) {
+            document.getElementById('fileInput').files = files;
+            document.getElementById('selectedFileName').innerText = `${files[0].name} (${(files[0].size / 1024).toFixed(1)} KB)`;
+        }
+    });
+
+    function showAlert(message, type='success') {
+        const container = document.getElementById('alertContainer');
+        container.innerHTML = `
+            <div class="alert alert-${type} alert-dismissible fade show" role="alert">
+                <i class="fa-solid ${type === 'success' ? 'fa-circle-check' : 'fa-triangle-exclamation'} me-2"></i>
+                ${message}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        `;
+    }
+
+    // Upload Dataset
+    function uploadDataset() {
+        const fileInput = document.getElementById('fileInput');
+        if (!fileInput.files || fileInput.files.length === 0) {
+            showAlert("Please select a CSV file to upload.", "warning");
+            return;
+        }
+
+        const file = fileInput.files[0];
+        if (!file.name.endsWith('.csv')) {
+            showAlert("Only .csv files are supported.", "danger");
+            return;
+        }
+
+        const formData = new FormData();
+        formData.append('dataset_file', file);
+        formData.append('make_active', document.getElementById('autoActivateCheck').checked);
+
+        const btn = document.getElementById('btnUpload');
+        btn.disabled = true;
+        btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Uploading & Validating...';
+
+        fetch('/api/dataset/upload', {
+            method: 'POST',
+            body: formData
+        })
+        .then(res => res.json())
+        .then(data => {
+            btn.disabled = false;
+            btn.innerHTML = '<i class="fa-solid fa-upload me-2"></i>Upload and Validate Dataset';
+
+            if (data.success) {
+                showAlert(data.message, "success");
+                
+                // If auto-train was checked, immediately trigger training
+                if (document.getElementById('autoTrainCheck').checked) {
+                    triggerRetrain();
+                } else {
+                    setTimeout(() => window.location.reload(), 1200);
+                }
+            } else {
+                showAlert(data.error || "Upload failed.", "danger");
+            }
+        })
+        .catch(err => {
+            btn.disabled = false;
+            btn.innerHTML = '<i class="fa-solid fa-upload me-2"></i>Upload and Validate Dataset';
+            showAlert(`Upload error: ${err}`, "danger");
+        });
+    }
+
+    // Switch Active Dataset
+    function switchDataset(path) {
+        fetch('/api/dataset/switch', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ dataset_path: path })
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.success) {
+                showAlert("Active dataset switched. Reloading...", "success");
+                setTimeout(() => window.location.reload(), 800);
+            } else {
+                showAlert(data.error || "Failed to switch dataset.", "danger");
+            }
+        })
+        .catch(err => showAlert(`Switch error: ${err}`, "danger"));
+    }
+
+    // Trigger Retraining
+    function triggerRetrain() {
+        const sampleSize = parseInt(document.getElementById('retrainSampleSize').value);
+        const overlay = document.getElementById('loadingOverlay');
+        overlay.style.display = 'flex';
+
+        fetch('/api/dataset/retrain', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ sample_size: sampleSize })
+        })
+        .then(res => res.json())
+        .then(data => {
+            overlay.style.display = 'none';
+            if (data.success) {
+                showAlert("ML Pipeline completed successfully! All models and diagnostic curves are updated.", "success");
+                setTimeout(() => window.location.href = '/', 1500);
+            } else {
+                showAlert(data.error || "Retraining failed.", "danger");
+            }
+        })
+        .catch(err => {
+            overlay.style.display = 'none';
+            showAlert(`Retraining error: ${err}`, "danger");
+        });
+    }
+</script>
+{% endblock %}

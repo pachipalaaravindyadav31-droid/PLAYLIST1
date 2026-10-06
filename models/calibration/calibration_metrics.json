@@ -1,0 +1,31 @@
+{
+    "calibration": {
+        "brier_scores": {
+            "uncalibrated": 0.04898,
+            "platt_scaling": 0.04716,
+            "isotonic_regression": 0.04777
+        }
+    },
+    "statistical_testing": {
+        "mcnemar": {
+            "model_A": "Logistic Regression",
+            "model_B": "Gradient Boosting",
+            "contingency_table": {
+                "both_correct": 923,
+                "lr_only": 12,
+                "gbdt_only": 14,
+                "both_wrong": 51
+            },
+            "chi2_statistic": 0.0385,
+            "p_value": 0.8445192674729399,
+            "statistically_significant": false
+        }
+    },
+    "regression_evaluation": {
+        "rmse": 20.2737,
+        "mae": 15.4042,
+        "r2": 0.1951,
+        "residual_mean": 0.0602,
+        "residual_std": 20.2737
+    }
+}

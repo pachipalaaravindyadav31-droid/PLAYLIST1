@@ -13,13 +13,53 @@ from src.utils import get_logger, get_path, save_plot
 
 logger = get_logger(__name__)
 
-def load_and_clean_data(filepath):
-    """Loads dataset from CSV, cleans missing values, and drops duplicates/unnecessary columns."""
+def load_and_clean_data(filepath=None):
+    """Loads dataset from CSV, ensures schema compatibility, cleans missing values, and imputes defaults."""
+    if filepath is None:
+        from src.dataset_manager import get_active_dataset_path
+        filepath = get_active_dataset_path()
+
     logger.info(f"Loading raw data from {filepath}...")
     df = pd.read_csv(filepath)
     
+    # Standard column defaults for music audio signals
+    column_defaults = {
+        'popularity': 45.0,
+        'duration_ms': 200000.0,
+        'danceability': 0.55,
+        'energy': 0.60,
+        'key': 5,
+        'loudness': -8.0,
+        'mode': 1,
+        'speechiness': 0.08,
+        'acousticness': 0.30,
+        'instrumentalness': 0.05,
+        'liveness': 0.15,
+        'valence': 0.50,
+        'tempo': 120.0,
+        'time_signature': 4,
+        'explicit': False,
+        'track_genre': 'pop',
+        'artists': 'Unknown Artist',
+        'album_name': 'Unknown Album',
+        'track_name': 'Untitled Track'
+    }
+
+    # Ensure all required features exist in dataframe
+    for col, default_val in column_defaults.items():
+        if col not in df.columns:
+            logger.warning(f"Column '{col}' missing from uploaded dataset. Imputing with default: {default_val}")
+            df[col] = default_val
+        else:
+            # Impute NaN values if any
+            if df[col].isnull().any():
+                df[col] = df[col].fillna(default_val)
+
+    # Convert explicit to boolean/int
+    df['explicit'] = df['explicit'].astype(bool)
+
     # Clean missing values in text columns
-    text_cols = ['artists', 'album_name', 'track_name']
+    text_cols = ['artists', 'album_name', 'track_name', 'track_genre']
     for col in text_cols:
         if col in df.columns:
             df[col] = df[col].fillna('Unknown')
@@ -28,8 +68,9 @@ def load_and_clean_data(filepath):
     if 'Unnamed: 0' in df.columns:
         df = df.drop(columns=['Unnamed: 0'])
         
-    logger.info(f"Raw data loaded with shape: {df.shape}")
+    logger.info(f"Raw data loaded and validated with shape: {df.shape}")
     return df
+
 
 def generate_skip_proxies(df, seed=42):
     """Generates synthetic skip behavior features based on track properties plus noise."""
@@ -165,11 +206,11 @@ def generate_eda_plots(df):
     
     logger.info("EDA plots saved to static/images.")
 
-def prepare_data_and_preprocessors(sample_size=30000, test_size=0.2, seed=42):
+def prepare_data_and_preprocessors(sample_size=30000, test_size=0.2, seed=42, filepath=None):
     """Main data processing pipeline. Prepares raw data, creates splits, fits and saves preprocessors."""
-    # 1. Load and clean
-    csv_path = get_path('Data', 'dataset.csv')
-    df = load_and_clean_data(csv_path)
+    # 1. Load and clean from specified or active dataset
+    df = load_and_clean_data(filepath)
+
     
     # 2. Generate target proxies
     df = generate_skip_proxies(df, seed=seed)

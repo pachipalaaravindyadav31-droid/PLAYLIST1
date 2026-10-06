@@ -1,0 +1,421 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-12">
+        <h2 class="text-success fw-bold"><i class="fa-solid fa-chart-line-up me-2"></i>Concept Graphs Studio (Modules M1 — M5)</h2>
+        <p class="text-secondary">Comprehensive visual laboratory: interactive charts, diagnostic curves, cluster projections, calibration diagrams, and mathematical formulations across the complete machine learning lifecycle.</p>
+    </div>
+</div>
+
+<!-- Tabs for Module Graphs -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card bg-black border-secondary shadow">
+            <div class="card-header bg-dark border-secondary">
+                <ul class="nav nav-pills card-header-pills" id="graphPills" role="tablist">
+                    <li class="nav-item me-2" role="presentation">
+                        <button class="nav-link active bg-success text-white fw-bold" id="m1-graph-tab" data-bs-toggle="pill" data-bs-target="#m1-graphs" type="button" role="tab">
+                            <i class="fa-solid fa-arrows-spin me-1"></i> M1: Lifecycle & Features
+                        </button>
+                    </li>
+                    <li class="nav-item me-2" role="presentation">
+                        <button class="nav-link bg-dark text-success border border-success fw-bold" id="m2-graph-tab" data-bs-toggle="pill" data-bs-target="#m2-graphs" type="button" role="tab">
+                            <i class="fa-solid fa-square-root-variable me-1"></i> M2: Linear & Regularization
+                        </button>
+                    </li>
+                    <li class="nav-item me-2" role="presentation">
+                        <button class="nav-link bg-dark text-success border border-success fw-bold" id="m3-graph-tab" data-bs-toggle="pill" data-bs-target="#m3-graphs" type="button" role="tab">
+                            <i class="fa-solid fa-tree me-1"></i> M3: Trees & Ensembles
+                        </button>
+                    </li>
+                    <li class="nav-item me-2" role="presentation">
+                        <button class="nav-link bg-dark text-success border border-success fw-bold" id="m4-graph-tab" data-bs-toggle="pill" data-bs-target="#m4-graphs" type="button" role="tab">
+                            <i class="fa-solid fa-diagram-project me-1"></i> M4: Unsupervised & PCA
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link bg-dark text-success border border-success fw-bold" id="m5-graph-tab" data-bs-toggle="pill" data-bs-target="#m5-graphs" type="button" role="tab">
+                            <i class="fa-solid fa-scale-balanced me-1"></i> M5: Calibration & Evaluation
+                        </button>
+                    </li>
+                </ul>
+            </div>
+            <div class="card-body p-4">
+                <div class="tab-content" id="graphTabContent">
+
+                    <!-- ==================== M1 GRAPHS ==================== -->
+                    <div class="tab-pane fade show active" id="m1-graphs" role="tabpanel">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <h4 class="text-success fw-bold mb-0"><i class="fa-solid fa-database me-2"></i>M1: Data Distributions & Feature Relationships</h4>
+                            <span class="badge bg-secondary">Lifecycle Ingestion & Exploratory Analysis</span>
+                        </div>
+                        <p class="text-light">
+                            Exploratory verification of raw Spotify track signals before feeding into downstream supervised learning models.
+                        </p>
+
+                        <div class="row g-4 my-2">
+                            <div class="col-lg-6">
+                                <div class="card bg-dark border-secondary h-100">
+                                    <div class="card-header border-secondary text-white fw-bold">
+                                        <i class="fa-solid fa-chart-column me-2 text-success"></i>Popularity Target Distribution
+                                    </div>
+                                    <div class="card-body text-center">
+                                        <img src="{{ url_for('static', filename='images/popularity_dist.png') }}" class="img-fluid rounded border border-secondary shadow-sm mb-3" alt="Popularity Distribution">
+                                        <div class="text-start small text-secondary">
+                                            <p class="mb-1"><strong class="text-light">Key Concept:</strong> Zero-inflation and long-tailed density in music catalogs. Shows the challenge of regression vs binary thresholding.</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-lg-6">
+                                <div class="card bg-dark border-secondary h-100">
+                                    <div class="card-header border-secondary text-white fw-bold">
+                                        <i class="fa-solid fa-chart-column me-2 text-danger"></i>Skip Probability Proxy Distribution
+                                    </div>
+                                    <div class="card-body text-center">
+                                        <img src="{{ url_for('static', filename='images/skip_prob_dist.png') }}" class="img-fluid rounded border border-secondary shadow-sm mb-3" alt="Skip Probability Distribution">
+                                        <div class="text-start small text-secondary">
+                                            <p class="mb-1"><strong class="text-light">Key Concept:</strong> Synthetic skip proxy constructed via acoustic distance and inverse popularity metrics with 0.35 / 0.60 decision thresholds.</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-lg-6">
+                                <div class="card bg-dark border-secondary h-100">
+                                    <div class="card-header border-secondary text-white fw-bold">
+                                        <i class="fa-solid fa-table-cells me-2 text-info"></i>Feature Correlation Matrix
+                                    </div>
+                                    <div class="card-body text-center">
+                                        <img src="{{ url_for('static', filename='images/correlation_matrix.png') }}" class="img-fluid rounded border border-secondary shadow-sm mb-3" alt="Correlation Matrix">
+                                        <div class="text-start small text-secondary">
+                                            <p class="mb-1"><strong class="text-light">Key Concept:</strong> Pearson correlation (\(r\)). Demonstrates collinearity between loudness and energy (\(r \approx 0.76\)) vs acousticness (\(r \approx -0.73\)).</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-lg-6">
+                                <div class="card bg-dark border-secondary h-100">
+                                    <div class="card-header border-secondary text-white fw-bold">
+                                        <i class="fa-solid fa-circle-dot me-2 text-warning"></i>Danceability vs. Energy vs. Skip Risk
+                                    </div>
+                                    <div class="card-body text-center">
+                                        <img src="{{ url_for('static', filename='images/dance_energy_skip.png') }}" class="img-fluid rounded border border-secondary shadow-sm mb-3" alt="Danceability vs Energy">
+                                        <div class="text-start small text-secondary">
+                                            <p class="mb-1"><strong class="text-light">Key Concept:</strong> Multi-dimensional scatter showing non-linear listener engagement patterns across tempo and dynamic range.</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- ==================== M2 GRAPHS ==================== -->
+                    <div class="tab-pane fade" id="m2-graphs" role="tabpanel">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <h4 class="text-success fw-bold mb-0"><i class="fa-solid fa-chart-line me-2"></i>M2: Linear Models, Regularization Paths & Sigmoid Log-Loss</h4>
+                            <span class="badge bg-secondary">Ridge \(L_2\) vs. Lasso \(L_1\) & Logistic Regression</span>
+                        </div>
+                        <p class="text-light">
+                            Analyzing how \(L_1\) regularization drives coefficients to exact zero (sparsity) while \(L_2\) shrinks weights smoothly to avoid multicollinear blowup.
+                        </p>
+
+                        <div class="row g-4 my-2">
+                            <div class="col-lg-6">
+                                <div class="card bg-dark border-secondary h-100">
+                                    <div class="card-header border-secondary text-white fw-bold">
+                                        <i class="fa-solid fa-bezier-curve me-2 text-success"></i>L1 vs L2 Regularization Path (Alpha Sweep)
+                                    </div>
+                                    <div class="card-body text-center">
+                                        <img src="{{ url_for('static', filename='images/regression_regularization_path.png') }}" class="img-fluid rounded border border-secondary shadow-sm mb-3" alt="Regularization Path">
+                                        <div class="text-start small text-secondary">
+                                            <p class="mb-1"><strong class="text-light">Geometric Insight:</strong> The diamond contour of \(L_1\) constraint \(\|\beta\|_1 \le C\) hits loss ellipses on axes, setting irrelevant audio feature weights to zero.</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-lg-6">
+                                <div class="card bg-dark border-secondary h-100">
+                                    <div class="card-header border-secondary text-white fw-bold">
+                                        <i class="fa-solid fa-sliders me-2 text-warning"></i>Impact of Feature Standardization on Coefficients
+                                    </div>
+                                    <div class="card-body text-center">
+                                        <img src="{{ url_for('static', filename='images/regression_scaling_coefs.png') }}" class="img-fluid rounded border border-secondary shadow-sm mb-3" alt="Scaling Effect">
+                                        <div class="text-start small text-secondary">
+                                            <p class="mb-1"><strong class="text-light">Standardization Necessity:</strong> Without z-score scaling, large-magnitude features (e.g. <code>duration_ms</code> in millions) dominate gradient descent and corrupt regularization penalties.</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-lg-6">
+                                <div class="card bg-dark border-secondary h-100">
+                                    <div class="card-header border-secondary text-white fw-bold">
+                                        <i class="fa-solid fa-arrow-trend-down me-2 text-info"></i>Alpha Hyperparameter Penalty vs. Test \(R^2\)
+                                    </div>
+                                    <div class="card-body text-center">
+                                        <img src="{{ url_for('static', filename='images/regression_alpha_comparison.png') }}" class="img-fluid rounded border border-secondary shadow-sm mb-3" alt="Alpha Comparison">
+                                        <div class="text-start small text-secondary">
+                                            <p class="mb-1"><strong class="text-light">Bias-Variance Tradeoff:</strong> Optimal \(\alpha\) balances bias from coefficient shrinkage against variance from noisy empirical data.</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-lg-6">
+                                <div class="card bg-dark border-secondary h-100">
+                                    <div class="card-header border-secondary text-white fw-bold">
+                                        <i class="fa-solid fa-square-binary me-2 text-danger"></i>Logistic Regression Decision Boundary & Confusion Matrix
+                                    </div>
+                                    <div class="card-body text-center">
+                                        <img src="{{ url_for('static', filename='images/classification_confusion_matrix.png') }}" class="img-fluid rounded border border-secondary shadow-sm mb-3" alt="Confusion Matrix">
+                                        <div class="text-start small text-secondary">
+                                            <p class="mb-1"><strong class="text-light">Hyperplane Partition:</strong> Maps log-odds \(z = \beta^T x + \beta_0\) through sigmoid \(\sigma(z) = \frac{1}{1 + e^{-z}}\) with classification threshold \(p=0.5\).</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- ==================== M3 GRAPHS ==================== -->
+                    <div class="tab-pane fade" id="m3-graphs" role="tabpanel">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <h4 class="text-success fw-bold mb-0"><i class="fa-solid fa-tree me-2"></i>M3: Tree-Based Ensembles & Boosting Dynamics</h4>
+                            <span class="badge bg-secondary">Random Forests (Bagging) & GBDT / XGBoost / LightGBM (Boosting)</span>
+                        </div>
+                        <p class="text-light">
+                            Comparing tree growth depth, variance reduction through bootstrap aggregation (Random Forests), and sequential gradient residual fitting.
+                        </p>
+
+                        <div class="row g-4 my-2">
+                            <div class="col-lg-6">
+                                <div class="card bg-dark border-secondary h-100">
+                                    <div class="card-header border-secondary text-white fw-bold">
+                                        <i class="fa-solid fa-chart-area me-2 text-danger"></i>Decision Tree Max Depth vs Overfitting
+                                    </div>
+                                    <div class="card-body text-center">
+                                        <img src="{{ url_for('static', filename='images/regression_dt_depth.png') }}" class="img-fluid rounded border border-secondary shadow-sm mb-3" alt="Tree Depth Curve">
+                                        <div class="text-start small text-secondary">
+                                            <p class="mb-1"><strong class="text-light">Overfitting Diagnostic:</strong> As depth exceeds 10, Train \(R^2 \to 1.0\) while Test \(R^2\) collapses due to leaf memorization of track variance.</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-lg-6">
+                                <div class="card bg-dark border-secondary h-100">
+                                    <div class="card-header border-secondary text-white fw-bold">
+                                        <i class="fa-solid fa-list-ol me-2 text-success"></i>Tree Gini / MDI Feature Importance (Skip Classification)
+                                    </div>
+                                    <div class="card-body text-center">
+                                        <img src="{{ url_for('static', filename='images/classification_feature_importance.png') }}" class="img-fluid rounded border border-secondary shadow-sm mb-3" alt="Classification Feature Importance">
+                                        <div class="text-start small text-secondary">
+                                            <p class="mb-1"><strong class="text-light">Mean Decrease in Impurity:</strong> Ranks acoustic features (loudness, valence, tempo) by aggregate reduction in split impurity across all ensemble trees.</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-lg-6">
+                                <div class="card bg-dark border-secondary h-100">
+                                    <div class="card-header border-secondary text-white fw-bold">
+                                        <i class="fa-solid fa-ranking-star me-2 text-info"></i>Random Forest Feature Importance (Popularity Regression)
+                                    </div>
+                                    <div class="card-body text-center">
+                                        <img src="{{ url_for('static', filename='images/regression_feature_importance.png') }}" class="img-fluid rounded border border-secondary shadow-sm mb-3" alt="Regression Feature Importance">
+                                        <div class="text-start small text-secondary">
+                                            <p class="mb-1"><strong class="text-light">Feature Selection:</strong> Genre one-hot embeddings combined with acoustic signals provide the strongest non-linear split nodes.</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-lg-6">
+                                <div class="card bg-dark border-secondary h-100">
+                                    <div class="card-header border-secondary text-white fw-bold">
+                                        <i class="fa-solid fa-table-cells-large me-2 text-warning"></i>Multinomial 3-Class Risk Matrix
+                                    </div>
+                                    <div class="card-body text-center">
+                                        <img src="{{ url_for('static', filename='images/classification_multinomial_cm.png') }}" class="img-fluid rounded border border-secondary shadow-sm mb-3" alt="Multinomial Confusion Matrix">
+                                        <div class="text-start small text-secondary">
+                                            <p class="mb-1"><strong class="text-light">Multi-Class Evaluation:</strong> Softmax output distribution across Low (0), Medium (1), and High (2) skip risk tiers.</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- ==================== M4 GRAPHS ==================== -->
+                    <div class="tab-pane fade" id="m4-graphs" role="tabpanel">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <h4 class="text-success fw-bold mb-0"><i class="fa-solid fa-diagram-project me-2"></i>M4: Unsupervised Learning, PCA & Anomaly Detection</h4>
+                            <span class="badge bg-secondary">K-Means, DBSCAN, Hierarchical Dendrograms, t-SNE & Isolation Forest</span>
+                        </div>
+                        <p class="text-light">
+                            Discovering natural song clusters, non-convex density groupings, outlier track signals, and 2D manifold embeddings without supervision labels.
+                        </p>
+
+                        <div class="row g-4 my-2">
+                            <div class="col-lg-6">
+                                <div class="card bg-dark border-secondary h-100">
+                                    <div class="card-header border-secondary text-white fw-bold">
+                                        <i class="fa-solid fa-chart-line me-2 text-success"></i>K-Means Elbow Method & Silhouette Coefficient
+                                    </div>
+                                    <div class="card-body text-center">
+                                        <img src="{{ url_for('static', filename='images/m4_kmeans_elbow_silhouette.png') }}" class="img-fluid rounded border border-secondary shadow-sm mb-3" alt="K-Means Elbow & Silhouette">
+                                        <div class="text-start small text-secondary">
+                                            <p class="mb-1"><strong class="text-light">Inertia (WCSS) & Silhouette:</strong> Optimal \(K\) is selected at the maximum silhouette \(s(i) = \frac{b(i)-a(i)}{\max(a(i), b(i))}\) and the elbow point where diminishing returns occur in within-cluster sum of squares.</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-lg-6">
+                                <div class="card bg-dark border-secondary h-100">
+                                    <div class="card-header border-secondary text-white fw-bold">
+                                        <i class="fa-solid fa-chart-pie me-2 text-info"></i>PCA Scree Plot & Cumulative Explained Variance
+                                    </div>
+                                    <div class="card-body text-center">
+                                        <img src="{{ url_for('static', filename='images/m4_pca_scree_variance.png') }}" class="img-fluid rounded border border-secondary shadow-sm mb-3" alt="PCA Scree Plot">
+                                        <div class="text-start small text-secondary">
+                                            <p class="mb-1"><strong class="text-light">Dimensionality Reduction:</strong> Eigenvalue decomposition of covariance matrix \(\Sigma = \frac{1}{n} X^T X\). Shows number of principal components needed to retain 85%+ audio variance.</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-lg-6">
+                                <div class="card bg-dark border-secondary h-100">
+                                    <div class="card-header border-secondary text-white fw-bold">
+                                        <i class="fa-solid fa-circle-nodes me-2 text-warning"></i>DBSCAN Density Clusters & Noise Outliers
+                                    </div>
+                                    <div class="card-body text-center">
+                                        <img src="{{ url_for('static', filename='images/m4_dbscan_clusters_outliers.png') }}" class="img-fluid rounded border border-secondary shadow-sm mb-3" alt="DBSCAN Clusters">
+                                        <div class="text-start small text-secondary">
+                                            <p class="mb-1"><strong class="text-light">Density-Based Partition:</strong> Uses \(\varepsilon\) and \(minPts\) to identify arbitrarily shaped non-convex audio clusters and isolate outlier tracks with no cluster assignment (\(\text{label}=-1\)).</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-lg-6">
+                                <div class="card bg-dark border-secondary h-100">
+                                    <div class="card-header border-secondary text-white fw-bold">
+                                        <i class="fa-solid fa-sitemap me-2 text-danger"></i>Hierarchical Clustering Dendrogram (Ward Linkage)
+                                    </div>
+                                    <div class="card-body text-center">
+                                        <img src="{{ url_for('static', filename='images/m4_hierarchical_dendrogram.png') }}" class="img-fluid rounded border border-secondary shadow-sm mb-3" alt="Hierarchical Dendrogram">
+                                        <div class="text-start small text-secondary">
+                                            <p class="mb-1"><strong class="text-light">Agglomerative Tree:</strong> Bottom-up pairwise merging minimizing within-cluster variance (\(d(u,v) = \sqrt{\frac{|u||v|}{|u|+|v|}} \|c_u - c_v\|_2\)). Horizontal cut gives cluster hierarchy.</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-lg-6">
+                                <div class="card bg-dark border-secondary h-100">
+                                    <div class="card-header border-secondary text-white fw-bold">
+                                        <i class="fa-solid fa-shield-virus me-2 text-primary"></i>Isolation Forest Anomaly Detection
+                                    </div>
+                                    <div class="card-body text-center">
+                                        <img src="{{ url_for('static', filename='images/m4_isolation_forest_anomalies.png') }}" class="img-fluid rounded border border-secondary shadow-sm mb-3" alt="Isolation Forest Anomalies">
+                                        <div class="text-start small text-secondary">
+                                            <p class="mb-1"><strong class="text-light">Path Length Anomaly Score:</strong> Isolates abnormal audio signatures (e.g. ambient noise, spoken word tracks) via random recursive feature splits. Outliers require significantly shorter tree depth \(h(x)\).</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-lg-6">
+                                <div class="card bg-dark border-secondary h-100">
+                                    <div class="card-header border-secondary text-white fw-bold">
+                                        <i class="fa-solid fa-mountain me-2 text-success"></i>t-SNE 2D Manifold Embedding
+                                    </div>
+                                    <div class="card-body text-center">
+                                        <img src="{{ url_for('static', filename='images/m4_tsne_umap_embedding.png') }}" class="img-fluid rounded border border-secondary shadow-sm mb-3" alt="t-SNE 2D Embedding">
+                                        <div class="text-start small text-secondary">
+                                            <p class="mb-1"><strong class="text-light">Non-Linear Manifold:</strong> Minimizes Kullback-Leibler divergence between Gaussian pairwise affinities in high-D and Student-t in 2D space. Note: inter-cluster distances are not Euclidean.</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- ==================== M5 GRAPHS ==================== -->
+                    <div class="tab-pane fade" id="m5-graphs" role="tabpanel">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <h4 class="text-success fw-bold mb-0"><i class="fa-solid fa-scale-balanced me-2"></i>M5: Model Evaluation, Selection, Calibration & Significance Testing</h4>
+                            <span class="badge bg-secondary">Platt Scaling, Isotonic Regression, ROC/PR Curves, Learning Curves & McNemar's Test</span>
+                        </div>
+                        <p class="text-light">
+                            Rigorous statistical validation: ensuring predicted probabilities match true empirical event likelihoods, diagnosing sample complexity, and evaluating model superiority.
+                        </p>
+
+                        <div class="row g-4 my-2">
+                            <div class="col-lg-6">
+                                <div class="card bg-dark border-secondary h-100">
+                                    <div class="card-header border-secondary text-white fw-bold">
+                                        <i class="fa-solid fa-sliders me-2 text-success"></i>Reliability Diagram (Probability Calibration Curves)
+                                    </div>
+                                    <div class="card-body text-center">
+                                        <img src="{{ url_for('static', filename='images/m5_probability_calibration_curve.png') }}" class="img-fluid rounded border border-secondary shadow-sm mb-3" alt="Calibration Curve">
+                                        <div class="text-start small text-secondary">
+                                            <p class="mb-1"><strong class="text-light">Calibration Discipline:</strong> Compares Uncalibrated vs Platt Scaling vs Isotonic Regression against ideal \(45^\circ\) diagonal. Quantified via Brier Score \(\text{BS} = \frac{1}{N}\sum (f_i - y_i)^2\).</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-lg-6">
+                                <div class="card bg-dark border-secondary h-100">
+                                    <div class="card-header border-secondary text-white fw-bold">
+                                        <i class="fa-solid fa-arrow-trend-up me-2 text-info"></i>ROC-AUC vs Precision-Recall (PR-AUC) Curves
+                                    </div>
+                                    <div class="card-body text-center">
+                                        <img src="{{ url_for('static', filename='images/m5_roc_vs_pr_auc_curve.png') }}" class="img-fluid rounded border border-secondary shadow-sm mb-3" alt="ROC vs PR Curves">
+                                        <div class="text-start small text-secondary">
+                                            <p class="mb-1"><strong class="text-light">Class Imbalance Insight:</strong> While ROC can appear overly optimistic due to large true negative count, PR-AUC explicitly measures Precision against Recall relative to the base skip rate.</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-lg-6">
+                                <div class="card bg-dark border-secondary h-100">
+                                    <div class="card-header border-secondary text-white fw-bold">
+                                        <i class="fa-solid fa-chart-line me-2 text-warning"></i>Learning Curve (Sample Complexity & Bias-Variance)
+                                    </div>
+                                    <div class="card-body text-center">
+                                        <img src="{{ url_for('static', filename='images/m5_learning_validation_curves.png') }}" class="img-fluid rounded border border-secondary shadow-sm mb-3" alt="Learning Curves">
+                                        <div class="text-start small text-secondary">
+                                            <p class="mb-1"><strong class="text-light">Data Scarcity Diagnosis:</strong> Tracks Train vs 5-Fold Stratified Cross-Validation F1-score across sample sizes \(N\). Convergence gap reveals remaining variance error.</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-lg-6">
+                                <div class="card bg-dark border-secondary h-100">
+                                    <div class="card-header border-secondary text-white fw-bold">
+                                        <i class="fa-solid fa-calculator me-2 text-danger"></i>McNemar's Statistical Test (Classifier Comparison)
+                                    </div>
+                                    <div class="card-body text-center">
+                                        <img src="{{ url_for('static', filename='images/m5_mcnemar_statistical_test.png') }}" class="img-fluid rounded border border-secondary shadow-sm mb-3" alt="McNemar Contingency Matrix">
+                                        <div class="text-start small text-secondary">
+                                            <p class="mb-1"><strong class="text-light">Statistical Significance:</strong> 2x2 contingency matrix evaluating discordant predictions \(b\) (Model A correct, B wrong) vs \(c\) (Model B correct, A wrong). Test statistic \(\chi^2 = \frac{(|b - c| - 1)^2}{b + c}\).</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-lg-12">
+                                <div class="card bg-dark border-secondary h-100">
+                                    <div class="card-header border-secondary text-white fw-bold">
+                                        <i class="fa-solid fa-magnifying-glass-chart me-2 text-primary"></i>Regression Loss Diagnostics & Residual Analysis (RMSE vs MAE)
+                                    </div>
+                                    <div class="card-body text-center">
+                                        <img src="{{ url_for('static', filename='images/m5_regression_error_diagnostics.png') }}" class="img-fluid rounded border border-secondary shadow-sm mb-3" alt="Residual Diagnostics">
+                                        <div class="text-start small text-secondary">
+                                            <p class="mb-1"><strong class="text-light">Residual Normality & Outlier Sensitivity:</strong> Evaluates residual errors \(e_i = y_i - \hat{y}_i\). RMSE heavily penalizes large errors quadratically, while MAE measures median central tendency.</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

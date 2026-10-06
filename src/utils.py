@@ -29,11 +29,14 @@ def get_path(*path_segments):
     project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
     return os.path.join(project_root, *path_segments)
 
-def save_plot(plt, filename):
-    """Save a matplotlib plot to the static/images directory."""
+def save_plot(fig_or_plt, filename):
+    """Save a matplotlib plot or figure to the static/images directory."""
     image_dir = get_path('static', 'images')
     os.makedirs(image_dir, exist_ok=True)
     filepath = os.path.join(image_dir, filename)
-    plt.savefig(filepath, bbox_inches='tight', dpi=100)
-    plt.close()
+    if hasattr(fig_or_plt, 'savefig'):
+        fig_or_plt.savefig(filepath, bbox_inches='tight', dpi=100)
+    import matplotlib.pyplot as plt
+    plt.close('all')
     return filepath
+

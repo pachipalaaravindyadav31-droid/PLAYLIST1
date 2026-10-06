@@ -9,6 +9,15 @@ from flask import Flask, request, jsonify, render_template
 
 from src.utils import get_path, get_logger
 from src.data_preprocessing import preprocess_features
+from src.dataset_manager import (
+    get_active_dataset_path,
+    get_dataset_summary,
+    save_and_activate_dataset,
+    list_all_datasets,
+    set_active_dataset
+)
+from src.train_all import train_everything
+
 
 logger = get_logger(__name__)
 
@@ -251,8 +260,14 @@ def experiments():
 
 @app.route('/concepts')
 def concepts():
-    """Renders the comprehensive M1, M2, and M3 ML concept curriculum breakdown."""
+    """Renders the comprehensive M1, M2, M3, M4, and M5 ML concept curriculum breakdown."""
     return render_template('concepts.html')
+
+@app.route('/graphs')
+def graphs():
+    """Renders the dedicated visual Concept Graphs studio for Modules M1-M5."""
+    return render_template('graphs.html')
+
 
 @app.route('/predict')
 def predict_page():
@@ -281,7 +296,79 @@ def monitoring():
         avg_skip_prob=avg_skip_prob
     )
 
+@app.route('/dataset')
+def dataset_page():
+    """Renders the Dataset Management Hub and online retraining studio."""
+    summary = get_dataset_summary()
+    datasets, active_path = list_all_datasets()
+    return render_template('dataset.html', summary=summary, datasets=datasets, active_path=active_path)
+
+# ==================== DATASET & RETRAINING APIS ====================
+
+@app.route('/api/dataset/upload', methods=['POST'])
+def upload_dataset_api():
+    """Uploads a new CSV dataset, validates schema, and registers it."""
+    if 'dataset_file' not in request.files:
+        return jsonify({'success': False, 'error': "No file part in the request."}), 400
+        
+    file = request.files['dataset_file']
+    if file.filename == '':
+        return jsonify({'success': False, 'error': "No file selected for uploading."}), 400
+        
+    if not file.filename.lower().endswith('.csv'):
+        return jsonify({'success': False, 'error': "Only .csv format files are accepted."}), 400
+        
+    make_active = request.form.get('make_active', 'true').lower() == 'true'
+    
+    success, message, summary = save_and_activate_dataset(file, file.filename, make_active=make_active)
+    if success:
+        return jsonify({
+            'success': True,
+            'message': message,
+            'summary': summary
+        })
+    else:
+        return jsonify({'success': False, 'error': message}), 400
+
+@app.route('/api/dataset/switch', methods=['POST'])
+def switch_dataset_api():
+    """Switches the active dataset to a previously registered dataset."""
+    req_data = request.get_json(silent=True) or {}
+    dataset_path = req_data.get('dataset_path')
+    if not dataset_path:
+        return jsonify({'success': False, 'error': "Missing 'dataset_path' parameter."}), 400
+        
+    success, message = set_active_dataset(dataset_path)
+    if success:
+        return jsonify({'success': True, 'message': message})
+    else:
+        return jsonify({'success': False, 'error': message}), 400
+
+@app.route('/api/dataset/retrain', methods=['POST'])
+def retrain_pipeline_api():
+    """Triggers the full ML training pipeline (M1-M5) on the currently active dataset."""
+    try:
+        req_data = request.get_json(silent=True) or {}
+        sample_size = int(req_data.get('sample_size', 15000))
+        active_dataset = get_active_dataset_path()
+        
+        logger.info(f"Triggering automated ML retraining on: {active_dataset} (Sample size: {sample_size})")
+        summary = train_everything(sample_size=sample_size, filepath=active_dataset)
+        
+        # Reload app in-memory caches
+        init_app_resources()
+        
+        return jsonify({
+            'success': True,
+            'message': "End-to-end ML pipeline (M1 - M5) executed and models reloaded successfully!",
+            'model_version': summary.get('model_version', '2.0.0')
+        })
+    except Exception as e:
+        logger.error(f"Retraining error: {e}", exc_info=True)
+        return jsonify({'success': False, 'error': str(e)}), 500
+
 # ==================== API ENDPOINT ====================
+
 
 @app.route('/api/predict', methods=['POST'])
 def predict():
